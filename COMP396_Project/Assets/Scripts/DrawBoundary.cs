@@ -13,6 +13,12 @@ public class DrawBoundary : MonoBehaviour
         new Vector3(-15f, -8f, 0f),
         new Vector3(-15f, 8f, 0f)
     };
+
+    // Getter and Setter
+    public Vector3[] GetBoundaryLine()
+    {
+        return BoundaryLine;
+    }
     
 
     // Start is called before the first frame update
