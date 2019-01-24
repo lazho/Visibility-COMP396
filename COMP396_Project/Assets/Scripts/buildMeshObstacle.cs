@@ -22,7 +22,25 @@ public class buildMeshObstacle : MonoBehaviour
             // second obstacle
             new Vector3(-9, -7, 0),
             new Vector3(-8, 1, 0),
-            new Vector3(-7, -3, 0)
+            new Vector3(-7, -3, 0),
+
+            // third obstacle
+            new Vector3(5, 6, 0),
+            new Vector3(6, 6, 0),
+            new Vector3(6, 5, 0),
+
+            // fourth
+            new Vector3(7, 4, 0),
+            new Vector3(16, 5, 0),
+            new Vector3(8, 1, 0),
+
+
+            // fifth
+            new Vector3(6, -2, 0),
+            new Vector3(12, 0, 0),
+            new Vector3(9, -5, 0),
+            new Vector3(3, -7, 0)
+            
         };
 
         // Triangles
@@ -34,6 +52,16 @@ public class buildMeshObstacle : MonoBehaviour
 
             // second
             4, 5, 6,
+
+            // third 
+            7, 8, 9,
+
+            // fourth 
+            10, 11, 12,
+
+            // fifth
+            13, 14, 15,
+            13, 15, 16
         };
 
         // UVs
