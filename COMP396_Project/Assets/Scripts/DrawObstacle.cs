@@ -1,72 +1,70 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class DrawObstacle : MonoBehaviour
 {
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject linePointPrefab;
-    private LinkedList<Vector3[]> Obstacles = new LinkedList<Vector3[]>();
+    [System.Serializable] private struct Obstacle
+    {
+        public Vector3[] obstaclePoints;
+    }
+    [SerializeField] private Obstacle[] obstacles = new Obstacle[5];
+    [SerializeField] private bool bUserDefine = false;
+
+    private LinkedList<Vector3> cacheObstacle = new LinkedList<Vector3>();
 
     // Start is called before the first frame update
     void Start()
     {
-        InitializeObstacles();
-        GenerateObstacles(Obstacles);
+        if (!bUserDefine)
+        {
+            GenerateObstacles(obstacles);
+        }
     }
 
-    private void InitializeObstacles()
+    // Update is called once per frame
+    void Update()
     {
-        // first obstacle
-        Obstacles.AddFirst(new Vector3[] {
-            new Vector3(-8f, 3f, 0),
-            new Vector3(-7f, 7f, 0),
-            new Vector3(-1f, 5f, 0),
-            new Vector3(-6f, -1f, 0),
-        });
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 newPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            newPos.z = 0;
+            cacheObstacle.AddFirst(newPos);
+            CreatePointMarker(newPos);
+        }
 
-        // second obstacle
-        Obstacles.AddFirst(new Vector3[] {
-            new Vector3(-9, -7, 0),
-            new Vector3(-8, 1, 0),
-            new Vector3(-7, -3, 0),
-        });
+        if (Input.GetMouseButtonDown(1))
+        {
+            clearAllPoints();
+        }
 
-        // third obstacle
-        Obstacles.AddFirst(new Vector3[] {
-            new Vector3(5, 6, 0),
-            new Vector3(6, 6, 0),
-            new Vector3(6, 5, 0),
-        });
-
-        // fourth obstacle
-        Obstacles.AddFirst(new Vector3[] {
-            new Vector3(7, 4, 0),
-            new Vector3(14, 5, 0),
-            new Vector3(8, 1, 0),
-        });
-
-        // fifth obstacle
-        Obstacles.AddFirst(new Vector3[] {
-            new Vector3(6, -2, 0),
-            new Vector3(12, 0, 0),
-            new Vector3(9, -5, 0),
-            new Vector3(3, -7, 0)
-        });
+        if (Input.GetKeyDown("space"))
+        {
+            GenerateObstacle(new Obstacle { obstaclePoints = cacheObstacle.ToArray() });
+            cacheObstacle.Clear();
+        }
     }
 
-    private void GenerateObstacles(LinkedList<Vector3[]> Obstacles)
+    private void GenerateObstacle(Obstacle obstacle)
     {
-        foreach (Vector3[] obstacle in Obstacles)
+        GenerateNewLine(obstacle.obstaclePoints);
+    }
+
+
+    private void GenerateObstacles(Obstacle[] Obstacles)
+    {
+        foreach (Obstacle obstacle in Obstacles)
         {
             // Generate the obstacle points
-            foreach (Vector3 obstaclePoint in obstacle)
+            foreach (Vector3 obstaclePoint in obstacle.obstaclePoints)
             {
                 Instantiate(linePointPrefab, obstaclePoint, Quaternion.identity);
             }
             // Generate the obstacles
-            GenerateNewLine(obstacle);
+            GenerateObstacle(obstacle);
         }
     }
 
@@ -89,5 +87,20 @@ public class DrawObstacle : MonoBehaviour
 
         lRend.positionCount = linePoints.Length;
         lRend.SetPositions(linePoints);
+    }
+
+    private void CreatePointMarker(Vector3 pointPosition)
+    {
+        Instantiate(linePointPrefab, pointPosition, Quaternion.identity);
+    }
+
+    private void clearAllPoints()
+    {
+        GameObject[] allPoints = GameObject.FindGameObjectsWithTag("PointMarker");
+
+        foreach (GameObject p in allPoints)
+        {
+            Destroy(p);
+        }
     }
 }

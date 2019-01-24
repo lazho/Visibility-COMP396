@@ -13,17 +13,18 @@ public class DrawBoundary : MonoBehaviour
         new Vector3(-15f, -8f, 0f),
         new Vector3(-15f, 8f, 0f)
     };
+    
 
     // Start is called before the first frame update
     void Start()
     {
-        GenerateNewLine(BoundaryLine);
+        GenerateNewLine(BoundaryLine);   
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+       
     }
 
     private void GenerateNewLine(Vector3[] linePoints)
