@@ -21,27 +21,31 @@ public class ViewPoint : MonoBehaviour
         {
             if (BoundaryLine.Length != 0)
             {
-                foreach (Vector3 boundaryPoint in BoundaryLine)
-                {
-                    RaycastHit2D rayCastHit2D = Physics2D.Linecast(viewpoint.transform.position, boundaryPoint);
-                    Instantiate(IntersectionPointPrefab, rayCastHit2D.point, Quaternion.identity);
-                    Debug.DrawLine(viewpoint.transform.position, rayCastHit2D.point, Color.blue, 100.0f);
-                }
-
+                GenerateLineCast(viewpoint, BoundaryLine);
                 foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
                 {
-                    foreach (Vector3 obstalePoint in obstacleLine.obstaclePoints)
-                    {
-                        RaycastHit2D rayCastHit2D = Physics2D.Linecast(viewpoint.transform.position, obstalePoint);
-                        Instantiate(IntersectionPointPrefab, rayCastHit2D.point, Quaternion.identity);
-                        Debug.DrawLine(viewpoint.transform.position, rayCastHit2D.point, Color.blue, 100.0f);
-                    }
+                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
                 }
+                // Testing general case
+                GenerateLineCast(viewpoint, new Vector3[]
+                {
+                    new Vector3(0, 9, 0)
+                });
             }
             else
             {
                 Debug.Log("No element in BoundaryLine.");
             }
+        }
+    }
+
+    private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
+    {
+        foreach (Vector3 endPoint in endPoints)
+        {
+            RaycastHit2D rayCastHit2D = Physics2D.Linecast(viewpoint.transform.position, endPoint);
+            Instantiate(IntersectionPointPrefab, rayCastHit2D.point, Quaternion.identity);
+            Debug.DrawLine(viewpoint.transform.position, rayCastHit2D.point, Color.blue, 100.0f);
         }
     }
 
