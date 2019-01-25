@@ -263,24 +263,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1151759071 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2567627957171618409, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
-    type: 3}
-  m_PrefabInstance: {fileID: 1382121411}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1151759072
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1151759071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4a29a9ed31a42d48a25b2aa5f282381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1382121411
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -422,5 +404,18 @@ PrefabInstance:
       propertyPath: bUserDefine
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
+        type: 3}
+      propertyPath: linePointPrefab
+      value: 
+      objectReference: {fileID: 2567627957171618409, guid: 130abf68d9d22fc4f809a83ee484de75,
+        type: 3}
+    - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
+        type: 3}
+      propertyPath: lineGeneratorPrefab
+      value: 
+      objectReference: {fileID: 901533297273027312, guid: 5b550dd9ccc357c41a9e09f0b6a769a7,
+        type: 3}
+    m_RemovedComponents:
+    - {fileID: 354989143, guid: 3218d82a0c74c914f92da7d2141a620b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 3218d82a0c74c914f92da7d2141a620b, type: 3}

@@ -30,7 +30,7 @@ public class DrawObstacle : MonoBehaviour
         if (!bUserDefine)
         {
             GenerateObstacles(obstacles);
-            GenerateCollider(obstacles);
+            // GenerateCollider(obstacles);
         }
     }
 
