@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ViewPoint : MonoBehaviour
@@ -8,6 +9,8 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private Vector3[] BoundaryLine;
     [SerializeField] private GameObject IntersectionPointPrefab;
     [SerializeField] private DrawObstacle.Obstacle[] ObstaclesLine;
+
+    public readonly double ACCURACY = 0.001;
 
     // Start is called before the first frame update
     void Start()
@@ -42,13 +45,34 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
     {
-        foreach (Vector3 endPoint in endPoints)
+        
+        for (int i = 0; i < endPoints.Length; i++)
         {
-            Vector2 direction = endPoint - viewpoint.transform.position;
+            Vector2 direction = endPoints[i] - viewpoint.transform.position;
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+
+             // Track through all the hit result
             foreach (RaycastHit2D rayHit in rayCastHits2D)
             {
-                Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+                // if the hit result is the same position as obstacle position
+                if (Math.Abs(rayHit.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayHit.point.y - endPoints[i].y) < ACCURACY)
+                {
+                    // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
+                    Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
+                    Vector3 next = endPoints[(i + 1) % endPoints.Length];
+                    // TODO test whether the two point are on the same side or not.
+                    bool testResult = false;
+                    if (testResult)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // that is what I want
+                        Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+                        break;
+                    }
+                }
             }
 
             try
@@ -57,7 +81,7 @@ public class ViewPoint : MonoBehaviour
             }
             catch (IndexOutOfRangeException ex)
             {
-                Debug.Log(rayCastHits2D.Length + " " + endPoint);
+                Debug.Log(rayCastHits2D.Length + " " + endPoints[i]);
             }
             
         }
