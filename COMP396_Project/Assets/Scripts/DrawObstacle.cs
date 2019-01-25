@@ -73,7 +73,7 @@ public class DrawObstacle : MonoBehaviour
             // Generate the obstacle points
             foreach (Vector3 obstaclePoint in obstacle.obstaclePoints)
             {
-                Instantiate(linePointPrefab, obstaclePoint, Quaternion.identity);
+                // Instantiate(linePointPrefab, obstaclePoint, Quaternion.identity);
             }
             // Generate the obstacles
             GenerateObstacle(obstacle);

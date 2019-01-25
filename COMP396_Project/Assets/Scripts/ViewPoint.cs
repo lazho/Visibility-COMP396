@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,9 +44,22 @@ public class ViewPoint : MonoBehaviour
     {
         foreach (Vector3 endPoint in endPoints)
         {
-            RaycastHit2D rayCastHit2D = Physics2D.Linecast(viewpoint.transform.position, endPoint);
-            Instantiate(IntersectionPointPrefab, rayCastHit2D.point, Quaternion.identity);
-            Debug.DrawLine(viewpoint.transform.position, rayCastHit2D.point, Color.blue, 100.0f);
+            Vector2 direction = endPoint - viewpoint.transform.position;
+            RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+            foreach (RaycastHit2D rayHit in rayCastHits2D)
+            {
+                Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+            }
+
+            try
+            {
+                Debug.DrawLine(viewpoint.transform.position, rayCastHits2D[0].point, Color.blue, 100.0f);
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                Debug.Log(rayCastHits2D.Length + " " + endPoint);
+            }
+            
         }
     }
 
