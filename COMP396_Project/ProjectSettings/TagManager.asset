@@ -4,8 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - LineMarker
   - PointMarker
+  - ViewPoint
+  - Boundary
   layers:
   - Default
   - TransparentFX
