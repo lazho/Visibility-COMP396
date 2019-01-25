@@ -124,6 +124,7 @@ public class DrawObstacle : MonoBehaviour
         {
             obstaclePoints2D[i] = new Vector2(obstacle.obstaclePoints[i].x, obstacle.obstaclePoints[i].y);
         }
+        
         polygonCollider.CreatePrimitive(obstacle.obstaclePoints.Length);
         polygonCollider.SetPath(index, obstaclePoints2D);
     }

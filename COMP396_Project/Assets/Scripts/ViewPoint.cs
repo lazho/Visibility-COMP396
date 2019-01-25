@@ -23,8 +23,9 @@ public class ViewPoint : MonoBehaviour
             {
                 foreach (Vector3 boundaryPoint in BoundaryLine)
                 {
-                    Physics2D.Linecast(viewpoint.transform.position, boundaryPoint);
-                    Debug.DrawLine(viewpoint.transform.position, boundaryPoint, Color.blue, 100.0f);
+                    RaycastHit2D rayCastHit2D = Physics2D.Linecast(viewpoint.transform.position, boundaryPoint);
+                    Instantiate(IntersectionPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                    Debug.DrawLine(viewpoint.transform.position, rayCastHit2D.point, Color.blue, 100.0f);
                 }
 
                 foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
