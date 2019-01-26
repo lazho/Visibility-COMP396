@@ -45,11 +45,16 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
     {
-        
-        for (int i = 0; i < endPoints.Length; i++)
+        LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
+        Vector2 criticalPoint = new Vector2();
+        for (int i = 0; i < endPoints.Length; i ++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
-            RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+            RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, Mathf.Infinity);
+            foreach (RaycastHit2D ray in rayCastHits2D)
+            {
+                Debug.Log("collide" + endPoints[i] + ray.point);
+            }
 
              // Track through all the hit result
             foreach (RaycastHit2D rayHit in rayCastHits2D)
@@ -57,27 +62,33 @@ public class ViewPoint : MonoBehaviour
                 // if the hit result is the same position as obstacle position
                 if (Math.Abs(rayHit.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayHit.point.y - endPoints[i].y) < ACCURACY)
                 {
+                    Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+                    criticalPoints.AddFirst(rayHit.point);
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
-                    // TODO test whether the two point are on the same side or not.
-                    bool testResult = false;
-                    if (testResult)
+                    
+                    if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev, next))
                     {
                         continue;
                     }
                     else
                     {
                         // that is what I want
-                        Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+                        criticalPoint = rayHit.point;
                         break;
                     }
+                }
+                else
+                {
+                    criticalPoint = rayHit.point;
+                    break;
                 }
             }
 
             try
             {
-                Debug.DrawLine(viewpoint.transform.position, rayCastHits2D[0].point, Color.blue, 100.0f);
+                Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
             }
             catch (IndexOutOfRangeException ex)
             {
@@ -85,6 +96,18 @@ public class ViewPoint : MonoBehaviour
             }
             
         }
+    }
+
+    private bool AreSameSide(Vector2 testLine, Vector2 testPoint1, Vector2 testPoint2)
+    {
+        float test1 = CrossProduct(testLine, testPoint1);
+        float test2 = CrossProduct(testLine, testPoint2);
+        return test1 * test2 > 0;
+    }
+
+    private float CrossProduct(Vector2 vector1, Vector2 vector2)
+    {
+        return vector1.x * vector2.y - vector1.y * vector2.x;
     }
 
     // Update is called once per frame
