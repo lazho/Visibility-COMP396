@@ -64,10 +64,11 @@ public class ViewPoint : MonoBehaviour
 
             LinkedList<RaycastHit2D> rayCastHits2D = new LinkedList<RaycastHit2D>();
             Vector2 start = viewpoint.transform.position;
-            int j = 0;
-            while (Physics2D.Raycast(start, direction) && j < 6)
+
+            while (Physics2D.Raycast(start, direction))
             {
                 RaycastHit2D rayHit = Physics2D.Raycast(start, direction, Mathf.Infinity);
+                Debug.Log("start:" + start + "    end: " + endPoints[i] + "direction:" + direction + "rayHit:" + rayHit.point);
                 Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
                 // rayCastHits2D.AddLast(rayCastHit);
                 // start = rayCastHit.point + direction.normalized;
@@ -83,9 +84,7 @@ public class ViewPoint : MonoBehaviour
 
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev, next))
                     {
-                        // TODO fix this and delete j
-                        start = rayHit.point + new Vector2(direction.normalized.x * (float)ACCURACY, direction.normalized.x * (float)ACCURACY);
-                        j++;
+                        start = rayHit.point + direction.normalized;
                         continue;
                     }
                     else

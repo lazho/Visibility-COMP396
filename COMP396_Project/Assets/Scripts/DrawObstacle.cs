@@ -23,7 +23,6 @@ public class DrawObstacle : MonoBehaviour
         return obstacles;
     }
 
-
     // Start is called before the first frame update
     void Start()
     {
