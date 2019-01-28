@@ -795,7 +795,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 354989143, guid: 3218d82a0c74c914f92da7d2141a620b, type: 3}
       propertyPath: m_Points.m_Paths.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 354989143, guid: 3218d82a0c74c914f92da7d2141a620b, type: 3}
       propertyPath: m_Points.m_Paths.Array.data[0].Array.size

@@ -30,7 +30,7 @@ public class DrawObstacle : MonoBehaviour
         if (!bUserDefine)
         {
             GenerateObstacles(obstacles);
-            // GenerateCollider(obstacles);
+            GenerateCollider(obstacles);
         }
     }
 
@@ -52,11 +52,30 @@ public class DrawObstacle : MonoBehaviour
                 clearAllPoints();
             }
 
-            if (Input.GetKeyDown("space"))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                GenerateObstacle(new Obstacle { obstaclePoints = cacheObstacle.ToArray() });
+                // Add new obstacle to obstacles
+                Obstacle[] temp = new Obstacle[obstacles.Length + 1];
+                for (int i = 0; i < obstacles.Length; i++)
+                {
+                    temp[i] = obstacles[i];
+                }
+                temp[obstacles.Length] = new Obstacle { obstaclePoints = cacheObstacle.ToArray() };
+                obstacles = temp;
+
+                GenerateObstacle(obstacles[obstacles.Length - 1]);
                 cacheObstacle.Clear();
             }
+
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                bUserDefine = false;
+                GenerateCollider(obstacles);
+            }
+        }
+        else
+        {
+            
         }
     }
 
@@ -116,27 +135,18 @@ public class DrawObstacle : MonoBehaviour
         }
     }
 
-    private void GenerateCollider(int index, Obstacle obstacle)
-    {
-        PolygonCollider2D polygonCollider = GetComponent<PolygonCollider2D>();
-        Vector2[] obstaclePoints2D = new Vector2[obstacle.obstaclePoints.Length];
-        for (int i = 0; i < obstacle.obstaclePoints.Length; i++)
-        {
-            obstaclePoints2D[i] = new Vector2(obstacle.obstaclePoints[i].x, obstacle.obstaclePoints[i].y);
-        }
-        
-        polygonCollider.CreatePrimitive(obstacle.obstaclePoints.Length);
-        polygonCollider.SetPath(index, obstaclePoints2D);
-    }
-
     private void GenerateCollider(Obstacle[] obstacles)
     {
-        int index = 0;
-        foreach (Obstacle obstacle in obstacles)
+        PolygonCollider2D polygonCollider = GetComponent<PolygonCollider2D>();
+        polygonCollider.pathCount = obstacles.Length;
+        for (int i = 0; i < polygonCollider.pathCount; i++)
         {
-            // TODO fix the function
-            // GenerateCollider(index, obstacle);
-            index++;
-        }
+            Vector2[] obstacles2D = new Vector2[obstacles[i].obstaclePoints.Length];
+            for (int j = 0; j < obstacles[i].obstaclePoints.Length; j++)
+            {
+                obstacles2D[j] = obstacles[i].obstaclePoints[j];
+            }
+            polygonCollider.SetPath(i, obstacles2D);
+        } 
     }
 }

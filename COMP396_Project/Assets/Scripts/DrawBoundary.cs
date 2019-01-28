@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,13 +20,15 @@ public class DrawBoundary : MonoBehaviour
     {
         return BoundaryLine;
     }
-    
 
     // Start is called before the first frame update
     void Start()
     {
-        GenerateNewLine(BoundaryLine);   
+        GenerateNewLine(BoundaryLine);
+        GenerateCollider(BoundaryLine);
     }
+
+
 
     // Update is called once per frame
     void Update()
@@ -52,5 +55,17 @@ public class DrawBoundary : MonoBehaviour
 
         lRend.positionCount = linePoints.Length;
         lRend.SetPositions(linePoints);
+    }
+
+    private void GenerateCollider(Vector3[] boundaryLine)
+    {
+        EdgeCollider2D edgeCollider = GetComponent<EdgeCollider2D>();
+        Vector2[] boundaryLine2D = new Vector2[boundaryLine.Length + 1];
+        for (int i = 0; i < boundaryLine.Length; i++)
+        {
+            boundaryLine2D[i] = boundaryLine[i];
+        }
+        boundaryLine2D[boundaryLine.Length] = boundaryLine[0];
+        edgeCollider.points = boundaryLine2D;
     }
 }

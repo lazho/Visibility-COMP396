@@ -430,7 +430,7 @@ PrefabInstance:
     - target: {fileID: 2274616539001696001, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
       propertyPath: m_Points.Array.size
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2274616539001696001, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
