@@ -3,7 +3,11 @@ guid: 93d84764d7876aa429d968e9b9e47aef
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - lineGeneratorPrefab: {fileID: 901533297273027312, guid: 5b550dd9ccc357c41a9e09f0b6a769a7,
+      type: 3}
+  - linePointPrefab: {fileID: 2567627957171618409, guid: 130abf68d9d22fc4f809a83ee484de75,
+      type: 3}
   executionOrder: 200
   icon: {instanceID: 0}
   userData: 

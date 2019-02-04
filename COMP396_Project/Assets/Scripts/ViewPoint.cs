@@ -8,7 +8,12 @@ public class ViewPoint : MonoBehaviour
 {
     [SerializeField] private Vector3[] BoundaryLine;
     [SerializeField] private GameObject IntersectionPointPrefab;
+    [SerializeField] private GameObject ViewPointPrefab;
     [SerializeField] private DrawObstacle.Obstacle[] ObstaclesLine;
+    private float screenWidthInUnits = 32f;
+    private float screenHeightInUnits = 18f;
+    private float offsetX = 16f;
+    private float offsetY = 9f;
 
     public readonly double ACCURACY = 0.001;
 
@@ -20,27 +25,9 @@ public class ViewPoint : MonoBehaviour
 
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
-        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-        if (viewpoint)
-        {
-            if (BoundaryLine.Length != 0)
-            {
-                GenerateLineCast(viewpoint, BoundaryLine);
-                foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
-                {
-                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
-                }
-                // Testing general case
-                GenerateLineCast(viewpoint, new Vector3[]
-                {
-                    new Vector3(0, 9, 0)
-                });
-            }
-            else
-            {
-                Debug.Log("No element in BoundaryLine.");
-            }
-        }
+
+        // Instantiate(ViewPointPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+
     }
 
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
@@ -69,7 +56,7 @@ public class ViewPoint : MonoBehaviour
             {
                 RaycastHit2D rayHit = Physics2D.Raycast(start, direction, Mathf.Infinity);
                 Debug.Log("start:" + start + "    end: " + endPoints[i] + "direction:" + direction + "rayHit:" + rayHit.point);
-                Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
+
                 // rayCastHits2D.AddLast(rayCastHit);
                 // start = rayCastHit.point + direction.normalized;
 
@@ -107,6 +94,18 @@ public class ViewPoint : MonoBehaviour
             }
             */
 
+            LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
+            foreach (Vector2 criticalpoint in criticalPoints)
+            {
+                crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, criticalPoint, Quaternion.identity));
+            }
+
+            foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
+            {
+                Destroy(criticalpointPrefab, 0.02f);
+            }
+
+
             // Track through all the hit result
             foreach (RaycastHit2D rayHit in rayCastHits2D)
             {
@@ -138,7 +137,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 */
             }
-            Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
+            // Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
         }
     }
 
@@ -157,6 +156,39 @@ public class ViewPoint : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+        viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
+        GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+        
+        if (viewpoint)
+        {
+            if (BoundaryLine.Length != 0)
+            {
+                GenerateLineCast(viewpoint, BoundaryLine);
+                foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
+                {
+                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
+                }
+                /*
+                // TODO delete Testing general case
+                GenerateLineCast(viewpoint, new Vector3[]
+                {
+                    new Vector3(0, 9, 0)
+                });
+                */
+            }
+            else
+            {
+                Debug.Log("No element in BoundaryLine.");
+            }
+        }
+        
+        Destroy(viewpointPrefab, 0.02f);
+    }
 
+    private Vector3 GetMousePosition()
+    {
+        return new Vector2(Input.mousePosition.x / Screen.width * screenWidthInUnits - offsetX, Input.mousePosition.y / Screen.height * screenHeightInUnits - offsetY);
     }
 }

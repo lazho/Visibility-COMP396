@@ -3,7 +3,11 @@ guid: b4a29a9ed31a42d48a25b2aa5f282381
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - IntersectionPointPrefab: {fileID: 2567627957171618409, guid: 8bd1f940f712a5b4faa3de3444d7db81,
+      type: 3}
+  - ViewPointPrefab: {fileID: 2567627957171618409, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
+      type: 3}
   executionOrder: 300
   icon: {instanceID: 0}
   userData: 
