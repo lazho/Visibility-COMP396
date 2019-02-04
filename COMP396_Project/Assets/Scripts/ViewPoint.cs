@@ -10,6 +10,7 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private GameObject IntersectionPointPrefab;
     [SerializeField] private GameObject ViewPointPrefab;
     [SerializeField] private DrawObstacle.Obstacle[] ObstaclesLine;
+    [SerializeField] private GameObject lineGeneratorPrefab;
     private float screenWidthInUnits = 32f;
     private float screenHeightInUnits = 18f;
     private float offsetX = 16f;
@@ -23,13 +24,53 @@ public class ViewPoint : MonoBehaviour
         DrawBoundary drawboundary = GameObject.Find("BoundaryManager").GetComponent<DrawBoundary>();
         DrawObstacle drawobstacle = GameObject.Find("ObstacleManager").GetComponent<DrawObstacle>();
 
+        // Generate the obstacles and boundry in advance
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
-        // Instantiate(ViewPointPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+
+        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+        viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
+        GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+
+        GenerateCriticalPoint(viewpoint);
+        Destroy(viewpointPrefab, 0.02f);
+    }
+
+    private void GenerateCriticalPoint(GameObject viewpoint)
+    {
+        if (viewpoint)
+        {
+            if (BoundaryLine.Length != 0)
+            {
+                GenerateLineCast(viewpoint, BoundaryLine);
+                foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
+                {
+                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
+                }
+            }
+            else
+            {
+                Debug.Log("No element in BoundaryLine.");
+            }
+        }
+    }
+
+    private Vector3 GetMousePosition()
+    {
+        return new Vector2(Input.mousePosition.x / Screen.width * screenWidthInUnits - offsetX, Input.mousePosition.y / Screen.height * screenHeightInUnits - offsetY);
+    }
+
+    /**
+     * Generate all the critical points based on the position of the viewpoint and end points
+     * @param viewpoint   the oject of the view point
+     * @param endPoints   the list of the end points that need to connected with the view point     
+     */
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
     {
         LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
@@ -55,7 +96,7 @@ public class ViewPoint : MonoBehaviour
             while (Physics2D.Raycast(start, direction))
             {
                 RaycastHit2D rayHit = Physics2D.Raycast(start, direction, Mathf.Infinity);
-                Debug.Log("start:" + start + "    end: " + endPoints[i] + "direction:" + direction + "rayHit:" + rayHit.point);
+                // Debug.Log("start:" + start + "    end: " + endPoints[i] + "direction:" + direction + "rayHit:" + rayHit.point);
 
                 // rayCastHits2D.AddLast(rayCastHit);
                 // start = rayCastHit.point + direction.normalized;
@@ -95,15 +136,40 @@ public class ViewPoint : MonoBehaviour
             */
 
             LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
+            LinkedList<LineRenderer> criticalpointsLineRenderers = new LinkedList<LineRenderer>();
             foreach (Vector2 criticalpoint in criticalPoints)
             {
                 crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, criticalPoint, Quaternion.identity));
+                
+                // TODO use line renderer to generate the debug line
+
+                GameObject newLineGen = Instantiate(lineGeneratorPrefab);
+                LineRenderer lRend = newLineGen.GetComponent<LineRenderer>();
+                if(lRend)
+                {
+                    // viewpoint and the end points
+                    lRend.positionCount = 2;
+                    lRend.SetPosition(0, new Vector3(viewpoint.transform.position.x, viewpoint.transform.position.y, 0));
+                    lRend.SetPosition(1, new Vector3(criticalpoint.x, criticalpoint.y, 0));
+                    criticalpointsLineRenderers.AddLast(lRend);
+                }
+                else
+                {
+                    Debug.Log("Something bad!!");
+                }
             }
 
             foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
             {
                 Destroy(criticalpointPrefab, 0.02f);
             }
+
+            foreach (LineRenderer lineRenderer in criticalpointsLineRenderers)
+            {
+                Destroy(lineRenderer, 0.03f);
+            }
+
+
 
 
             // Track through all the hit result
@@ -141,6 +207,7 @@ public class ViewPoint : MonoBehaviour
         }
     }
 
+    // test the two points are on the same side of test line or not
     private bool AreSameSide(Vector2 testLine, Vector2 testPoint1, Vector2 testPoint2)
     {
         float test1 = CrossProduct(testLine, testPoint1);
@@ -148,47 +215,9 @@ public class ViewPoint : MonoBehaviour
         return test1 * test2 > 0;
     }
 
+    // @return the cross product of two vectors
     private float CrossProduct(Vector2 vector1, Vector2 vector2)
     {
         return vector1.x * vector2.y - vector1.y * vector2.x;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-        viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
-        GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
-        
-        if (viewpoint)
-        {
-            if (BoundaryLine.Length != 0)
-            {
-                GenerateLineCast(viewpoint, BoundaryLine);
-                foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
-                {
-                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
-                }
-                /*
-                // TODO delete Testing general case
-                GenerateLineCast(viewpoint, new Vector3[]
-                {
-                    new Vector3(0, 9, 0)
-                });
-                */
-            }
-            else
-            {
-                Debug.Log("No element in BoundaryLine.");
-            }
-        }
-        
-        Destroy(viewpointPrefab, 0.02f);
-    }
-
-    private Vector3 GetMousePosition()
-    {
-        return new Vector2(Input.mousePosition.x / Screen.width * screenWidthInUnits - offsetX, Input.mousePosition.y / Screen.height * screenHeightInUnits - offsetY);
     }
 }

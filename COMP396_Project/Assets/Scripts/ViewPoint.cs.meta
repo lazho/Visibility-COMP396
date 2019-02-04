@@ -8,6 +8,8 @@ MonoImporter:
       type: 3}
   - ViewPointPrefab: {fileID: 2567627957171618409, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
       type: 3}
+  - lineGeneratorPrefab: {fileID: 901533297273027312, guid: 5b550dd9ccc357c41a9e09f0b6a769a7,
+      type: 3}
   executionOrder: 300
   icon: {instanceID: 0}
   userData: 

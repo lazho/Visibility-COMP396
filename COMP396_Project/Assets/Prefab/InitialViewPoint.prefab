@@ -46,5 +46,8 @@ MonoBehaviour:
   BoundaryLine: []
   IntersectionPointPrefab: {fileID: 2567627957171618409, guid: 8bd1f940f712a5b4faa3de3444d7db81,
     type: 3}
-  ViewPointPrefab: {fileID: 0}
+  ViewPointPrefab: {fileID: 2567627957171618409, guid: 885b90d1b30802a4d89b39b585ad9b07,
+    type: 3}
   ObstaclesLine: []
+  lineGeneratorPrefab: {fileID: 901533297273027312, guid: 825c7f834fcb96944b314501a9c5ed19,
+    type: 3}
