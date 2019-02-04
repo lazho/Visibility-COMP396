@@ -13,7 +13,7 @@ public class DrawObstacle : MonoBehaviour
         public Vector3[] obstaclePoints;
     }
     [SerializeField] private Obstacle[] obstacles;
-    [SerializeField] private bool bUserDefine = false;
+    [SerializeField] public bool bUserDefine = false;
 
     private LinkedList<Vector3> cacheObstacle = new LinkedList<Vector3>();
 
@@ -71,10 +71,6 @@ public class DrawObstacle : MonoBehaviour
                 bUserDefine = false;
                 GenerateCollider(obstacles);
             }
-        }
-        else
-        {
-            
         }
     }
 

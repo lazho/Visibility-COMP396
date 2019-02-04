@@ -18,11 +18,15 @@ public class ViewPoint : MonoBehaviour
 
     public readonly double ACCURACY = 0.001;
 
+    // cache variable
+    DrawBoundary drawboundary;
+    DrawObstacle drawobstacle;
+
     // Start is called before the first frame update
     void Start()
     {
-        DrawBoundary drawboundary = GameObject.Find("BoundaryManager").GetComponent<DrawBoundary>();
-        DrawObstacle drawobstacle = GameObject.Find("ObstacleManager").GetComponent<DrawObstacle>();
+        drawboundary = GameObject.Find("BoundaryManager").GetComponent<DrawBoundary>();
+        drawobstacle = GameObject.Find("ObstacleManager").GetComponent<DrawObstacle>();
 
         // Generate the obstacles and boundry in advance
         BoundaryLine = drawboundary.GetBoundaryLine();
@@ -34,12 +38,21 @@ public class ViewPoint : MonoBehaviour
     void Update()
     {
 
-        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-        viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
-        GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+        if (!drawobstacle.bUserDefine)
+        {
+            GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+            viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
+            GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
-        GenerateCriticalPoint(viewpoint);
-        Destroy(viewpointPrefab, 0.02f);
+            GenerateCriticalPoint(viewpoint);
+            Destroy(viewpointPrefab, 0.02f);
+        }
+        else
+        {
+            // update the obstacles and boundry in advance
+            BoundaryLine = drawboundary.GetBoundaryLine();
+            ObstaclesLine = drawobstacle.GetObstacles();
+        }
     }
 
     private void GenerateCriticalPoint(GameObject viewpoint)
