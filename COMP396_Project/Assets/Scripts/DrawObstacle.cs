@@ -132,16 +132,21 @@ public class DrawObstacle : MonoBehaviour
 
     private void GenerateCollider(Obstacle[] obstacles)
     {
-        PolygonCollider2D polygonCollider = GetComponent<PolygonCollider2D>();
-        polygonCollider.pathCount = obstacles.Length;
-        for (int i = 0; i < polygonCollider.pathCount; i++)
+        foreach(Obstacle obstacle in obstacles)
         {
-            Vector2[] obstacles2D = new Vector2[obstacles[i].obstaclePoints.Length];
-            for (int j = 0; j < obstacles[i].obstaclePoints.Length; j++)
-            {
-                obstacles2D[j] = obstacles[i].obstaclePoints[j];
-            }
-            polygonCollider.SetPath(i, obstacles2D);
-        } 
+            addCollider(obstacle);
+        }
+    }
+
+    private void addCollider(Obstacle obstacle)
+    {
+        PolygonCollider2D newPolygonCollider2D = gameObject.AddComponent<PolygonCollider2D>();
+        newPolygonCollider2D.pathCount = 1;
+        Vector2[] obstacles2D = new Vector2[obstacle.obstaclePoints.Length];
+        for (int j = 0; j < obstacle.obstaclePoints.Length; j++)
+        {
+            obstacles2D[j] = obstacle.obstaclePoints[j];
+        }
+        newPolygonCollider2D.SetPath(0, obstacles2D);
     }
 }

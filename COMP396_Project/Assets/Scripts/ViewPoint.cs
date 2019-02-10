@@ -16,7 +16,7 @@ public class ViewPoint : MonoBehaviour
     private float offsetX = 16f;
     private float offsetY = 9f;
 
-    public readonly double ACCURACY = 0.001;
+    public readonly double ACCURACY = 0.01;
 
     // cache variable
     DrawBoundary drawboundary;
@@ -41,7 +41,8 @@ public class ViewPoint : MonoBehaviour
         if (!drawobstacle.bUserDefine)
         {
             GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-            viewpoint.transform.position = new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
+            viewpoint.transform.position = new Vector2(-10, -4);
+                //new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
             GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
             GenerateCriticalPoint(viewpoint);
@@ -87,72 +88,68 @@ public class ViewPoint : MonoBehaviour
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
     {
         LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
-        Vector2 criticalPoint = new Vector2();
+        Vector2 hitPoint = new Vector2();
+
+        RaycastHit2D[] rayCastHits2D1 = Physics2D.RaycastAll(new Vector2(0,-1), new Vector2(1, 1));
+
+        Debug.Log(rayCastHits2D1.Length + " " + rayCastHits2D1[0].point + rayCastHits2D1[1].point + rayCastHits2D1[2].point);
+
         for (int i = 0; i < endPoints.Length; i++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
-            /*
-            if (Physics2D.Raycast(viewpoint.transform.position, direction))
+
+
+            RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+
+
+
+          
+
+            foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
-                Debug.Log(endPoints[i]);
-            }
-            */
-
-            // RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, endPoints[i]);
-            // RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, Mathf.Infinity, 511);
-            // Debug.Log(endPoints[i] + ": " + rayCastHits2D.Length);
-
-
-            LinkedList<RaycastHit2D> rayCastHits2D = new LinkedList<RaycastHit2D>();
-            Vector2 start = viewpoint.transform.position;
-
-            while (Physics2D.Raycast(start, direction))
-            {
-                RaycastHit2D rayHit = Physics2D.Raycast(start, direction, Mathf.Infinity);
-                // Debug.Log("start:" + start + "    end: " + endPoints[i] + "direction:" + direction + "rayHit:" + rayHit.point);
-
-                // rayCastHits2D.AddLast(rayCastHit);
-                // start = rayCastHit.point + direction.normalized;
-
                 // if the hit result is the same position as obstacle position
-                if (Math.Abs(rayHit.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayHit.point.y - endPoints[i].y) < ACCURACY)
+                if (Math.Abs(rayCastHit2D.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayCastHit2D.point.y - endPoints[i].y) < ACCURACY)
                 {
+                    
                     // Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
-                    criticalPoints.AddFirst(rayHit.point);
+                    criticalPoints.AddFirst(rayCastHit2D.point);
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
 
-                    if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev, next))
+                    // Debug.Log(AreSameSide(new Vector2(6, 1), new Vector2(12, 1), new Vector2(9, -5)));
+
+                    if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
-                        start = rayHit.point + direction.normalized;
+                        // Debug.Log(endPoints[i]);
                         continue;
                     }
                     else
                     {
                         // that is what I want
-                        criticalPoint = rayHit.point;
+                        hitPoint = rayCastHit2D.point;
                         break;
                     }
                 }
                 else
                 {
-                    criticalPoint = rayHit.point;
+                    
+                    hitPoint = rayCastHit2D.point;
+                    //Debug.Log(endPoints[i] + "  " + hitPoint);
                     break;
                 }
             }
-            /*
-            foreach (RaycastHit2D ray in rayCastHits2D)
-            {
-                Debug.Log("collide" + endPoints[i] + ray.point);
-            }
-            */
+            // Debug.Log("endPoint: " + endPoints[i] + "  hitPoint:" + hitPoint + "  viewPoint: " + viewpoint.transform.position + "direction:" + direction);
+            criticalPoints.AddFirst(hitPoint);
+            
+
 
             LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
             LinkedList<LineRenderer> criticalpointsLineRenderers = new LinkedList<LineRenderer>();
+            // Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
             foreach (Vector2 criticalpoint in criticalPoints)
             {
-                crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, criticalPoint, Quaternion.identity));
+                crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, hitPoint, Quaternion.identity));
                 
                 // TODO use line renderer to generate the debug line
 
@@ -181,42 +178,7 @@ public class ViewPoint : MonoBehaviour
             {
                 Destroy(lineRenderer, 0.03f);
             }
-
-
-
-
-            // Track through all the hit result
-            foreach (RaycastHit2D rayHit in rayCastHits2D)
-            {
-                /*
-                // if the hit result is the same position as obstacle position
-                if (Math.Abs(rayHit.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayHit.point.y - endPoints[i].y) < ACCURACY)
-                {
-                    // Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
-                    criticalPoints.AddFirst(rayHit.point);
-                    // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
-                    Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
-                    Vector3 next = endPoints[(i + 1) % endPoints.Length];
-
-                    if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev, next))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        // that is what I want
-                        criticalPoint = rayHit.point;
-                        break;
-                    }
-                }
-                else
-                {
-                    criticalPoint = rayHit.point;
-                    break;
-                }
-                */
-            }
-            // Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
+            
         }
     }
 
