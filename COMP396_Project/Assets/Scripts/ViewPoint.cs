@@ -40,19 +40,35 @@ public class ViewPoint : MonoBehaviour
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
+        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+        if (viewpoint)
+        {
+            // TODO replace (0,0)
+            viewpoint.transform.position = new Vector2(0, 0);
+            if (isInBoundry(viewpoint.transform.position))
+            {
+                GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+
+                GenerateCriticalPoint(viewpoint);
+            }
+        }
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        /*
         if (!drawobstacle.bUserDefine)
         {
             GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
             {
-                viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
+                // TODO replace (0,0)
+                viewpoint.transform.position = new Vector2(0, 0);
+                    // new Vector2(GetMousePosition().x, GetMousePosition().y);
                 if (isInBoundry(viewpoint.transform.position))
                 {
                     GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
@@ -68,6 +84,7 @@ public class ViewPoint : MonoBehaviour
             BoundaryLine = drawboundary.GetBoundaryLine();
             ObstaclesLine = drawobstacle.GetObstacles();
         }
+        */
     }
 
     // Determine whether a point is inside boundry or not
@@ -101,16 +118,23 @@ public class ViewPoint : MonoBehaviour
         criticalPoints.Clear();
         if (BoundaryLine.Length != 0)
         {
-            GenerateLineCast(viewpoint, BoundaryLine);
+
             foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
             {
                 GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
+
+
+
+
+
+            GenerateLineCast(viewpoint, BoundaryLine);
         }
         else
         {
             Debug.Log("No element in BoundaryLine.");
         }
+
     }
 
     private Vector3 GetMousePosition()
@@ -139,30 +163,30 @@ public class ViewPoint : MonoBehaviour
                 if (Math.Abs(rayCastHit2D.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayCastHit2D.point.y - endPoints[i].y) < ACCURACY)
                 {
 
-                    // Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
-                    criticalPoints.AddFirst(rayCastHit2D.point);
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
 
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
+                        criticalPoints.AddFirst(rayCastHit2D.point);
                         continue;
                     }
                     else
                     {
                         // that is what I want
                         hitPoint = rayCastHit2D.point;
+                        criticalPoints.AddFirst(hitPoint);
                         break;
                     }
                 }
                 else
                 {
                     hitPoint = rayCastHit2D.point;
+                    criticalPoints.AddFirst(hitPoint);
                     break;
                 }
             }
-            criticalPoints.AddFirst(hitPoint);
             if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
@@ -180,7 +204,10 @@ public class ViewPoint : MonoBehaviour
         List<Vector2> sortedcriticalPointsList = criticalPoints.ToList<Vector2>();
         sortedcriticalPointsList.Sort(compareByAngle);
 
-        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList[0], sortedcriticalPointsList[1]);
+        for (int i = 0; i < sortedcriticalPointsList.Count; i++)
+        {
+            GenerateMeshTriangle(viewpoint, sortedcriticalPointsList[i], sortedcriticalPointsList[(i + 1) % sortedcriticalPointsList.Count]);
+        }
     }
 
     private void GenerateMeshTriangle(GameObject viewpoint, Vector2 point1, Vector2 point2)
