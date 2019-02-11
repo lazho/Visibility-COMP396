@@ -11,6 +11,12 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private GameObject ViewPointPrefab;
     [SerializeField] private DrawObstacle.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
+    [SerializeField] private GameObject MeshManager;
+
+    // Test 
+    // Whether use mesh to show the visibility effect or not
+    [SerializeField] private bool bMesh = false;
+
     private float screenWidthInUnits = 32f;
     private float screenHeightInUnits = 18f;
     private float offsetX = 16f;
@@ -21,6 +27,8 @@ public class ViewPoint : MonoBehaviour
     // cache variable
     DrawBoundary drawboundary;
     DrawObstacle drawobstacle;
+
+    LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
 
     // Start is called before the first frame update
     void Start()
@@ -85,11 +93,12 @@ public class ViewPoint : MonoBehaviour
     }
 
     /**
-* 
-* @invariant viewpoint != null
-*/
+     * 
+     * @invariant viewpoint != null
+     */
     private void GenerateCriticalPoint(GameObject viewpoint)
     {
+        criticalPoints.Clear();
         if (BoundaryLine.Length != 0)
         {
             GenerateLineCast(viewpoint, BoundaryLine);
@@ -116,12 +125,7 @@ public class ViewPoint : MonoBehaviour
      */
     private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
     {
-        LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
         Vector2 hitPoint = new Vector2();
-
-        RaycastHit2D[] rayCastHits2D1 = Physics2D.RaycastAll(new Vector2(0, -1), new Vector2(1, 1));
-
-        // Debug.Log(rayCastHits2D1.Length + " " + rayCastHits2D1[0].point + rayCastHits2D1[1].point + rayCastHits2D1[2].point);
 
         for (int i = 0; i < endPoints.Length; i++)
         {
@@ -141,11 +145,8 @@ public class ViewPoint : MonoBehaviour
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
 
-                    // Debug.Log(AreSameSide(new Vector2(6, 1), new Vector2(12, 1), new Vector2(9, -5)));
-
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
-                        // Debug.Log(endPoints[i]);
                         continue;
                     }
                     else
@@ -157,51 +158,139 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-
                     hitPoint = rayCastHit2D.point;
-                    //Debug.Log(endPoints[i] + "  " + hitPoint);
                     break;
                 }
             }
-            // Debug.Log("endPoint: " + endPoints[i] + "  hitPoint:" + hitPoint + "  viewPoint: " + viewpoint.transform.position + "direction:" + direction);
             criticalPoints.AddFirst(hitPoint);
-
-
-            LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
-            LinkedList<LineRenderer> criticalpointsLineRenderers = new LinkedList<LineRenderer>();
-            // Debug.DrawLine(viewpoint.transform.position, criticalPoint, Color.blue, 100.0f);
-            foreach (Vector2 criticalpoint in criticalPoints)
+            if (!bMesh)
             {
-                crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, hitPoint, Quaternion.identity));
+                GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
+            }
+        }
 
-                // TODO use line renderer to generate the debug line
+        if (bMesh)
+        {
+            GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+        }
+    }
 
-                GameObject newLineGen = Instantiate(lineGeneratorPrefab);
-                LineRenderer lRend = newLineGen.GetComponent<LineRenderer>();
-                if (lRend)
+    private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
+    {
+        List<Vector2> sortedcriticalPointsList = criticalPoints.ToList<Vector2>();
+        sortedcriticalPointsList.Sort(compareByAngle);
+
+        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList[0], sortedcriticalPointsList[1]);
+    }
+
+    private void GenerateMeshTriangle(GameObject viewpoint, Vector2 point1, Vector2 point2)
+    {
+        MeshFilter meshfilter = MeshManager.GetComponent<MeshFilter>();
+        Mesh mesh = meshfilter.mesh;
+
+        // Vertices
+        Vector3[] vertices = new Vector3[]
+        {
+            viewpoint.transform.position,
+            point1,
+            point2
+        };
+
+        // Triangles
+        int[] triangles = new int[]
+        {
+            0, 1, 2,
+        };
+
+        mesh.Clear();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+    }
+
+    // compare two vector 
+    private int compareByAngle(Vector2 v1, Vector2 v2)
+    {
+        float angle1 = Vector2.Angle(v1, new Vector2(1, 0));
+        float angle2 = Vector2.Angle(v2, new Vector2(1, 0));
+
+        if (angle1 == angle2 && v1.y == v2.y)
+        {
+            return 0;
+        }
+
+        if (v1.y == 0 || v2.y == 0)
+        {
+            if (v1.y == 0)
+            {
+                if (v1.x > 0)
                 {
-                    // viewpoint and the end points
-                    lRend.positionCount = 2;
-                    lRend.SetPosition(0, new Vector3(viewpoint.transform.position.x, viewpoint.transform.position.y, 0));
-                    lRend.SetPosition(1, new Vector3(criticalpoint.x, criticalpoint.y, 0));
-                    criticalpointsLineRenderers.AddLast(lRend);
+                    return 1;
                 }
                 else
                 {
-                    Debug.Log("Something bad!!");
+                    return v2.y > 0 ? -1 : 1;
                 }
             }
-
-            foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
+            else
             {
-                Destroy(criticalpointPrefab, 0.02f);
+                if (v2.x > 0)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return v1.y > 0 ? 1 : -1;
+                }
             }
-
-            foreach (LineRenderer lineRenderer in criticalpointsLineRenderers)
+        }
+        else if (v1.y * v2.y > 0)
+        {
+            if (v1.y > 0)
             {
-                Destroy(lineRenderer, 0.03f);
+                return angle1 < angle2 ? 1 : -1;
             }
+            else
+            {
+                return angle1 > angle2 ? 1 : -1;
+            }
+        }
+        else
+        {
+            return v1.y > 0 ? 1 : -1;
+        }
+    }
 
+    private void GenerateVisibilityEffectWithLine(GameObject viewpoint, Vector2 hitPoint)
+    {
+        LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
+        LinkedList<LineRenderer> criticalpointsLineRenderers = new LinkedList<LineRenderer>();
+        crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, hitPoint, Quaternion.identity));
+
+        // use line renderer to generate the debug line
+        GameObject newLineGen = Instantiate(lineGeneratorPrefab);
+        LineRenderer lRend = newLineGen.GetComponent<LineRenderer>();
+        if (lRend)
+        {
+            // viewpoint and the end points
+            lRend.positionCount = 2;
+            lRend.SetPosition(0, new Vector3(viewpoint.transform.position.x, viewpoint.transform.position.y, 0));
+            lRend.SetPosition(1, new Vector3(hitPoint.x, hitPoint.y, 0));
+            criticalpointsLineRenderers.AddLast(lRend);
+        }
+        else
+        {
+            Debug.Log("Something bad!!");
+        }
+
+        foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
+        {
+            Destroy(criticalpointPrefab, 0.02f);
+        }
+
+        foreach (LineRenderer lineRenderer in criticalpointsLineRenderers)
+        {
+            Destroy(lineRenderer, 0.03f);
         }
     }
 
