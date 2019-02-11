@@ -27,6 +27,8 @@ public class ViewPoint : MonoBehaviour
     // cache variable
     DrawBoundary drawboundary;
     DrawObstacle drawobstacle;
+    MeshFilter meshfilter;
+    Mesh mesh;
 
     LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
     GameObject viewpoint;
@@ -82,12 +84,18 @@ public class ViewPoint : MonoBehaviour
 
                     GenerateCriticalPoint(viewpoint);
                     Destroy(viewpointPrefab, 0.02f);
+
+                    if (bMesh)
+                    {
+                        GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                    }
+                }
+                else
+                {
+                    mesh.Clear();
                 }
 
-                if (bMesh)
-                {
-                    GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
-                }
+                
             }
         }
         else
@@ -240,8 +248,8 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
     {
-        MeshFilter meshfilter = MeshManager.GetComponent<MeshFilter>();
-        Mesh mesh = meshfilter.mesh;
+        meshfilter = MeshManager.GetComponent<MeshFilter>();
+        mesh = meshfilter.mesh;
 
         
         // Vertices
