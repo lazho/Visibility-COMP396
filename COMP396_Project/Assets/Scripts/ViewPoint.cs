@@ -51,6 +51,11 @@ public class ViewPoint : MonoBehaviour
 
                 GenerateCriticalPoint(viewpoint);
             }
+
+            if (bMesh)
+            {
+                GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+            }
         }
 
 
@@ -124,10 +129,6 @@ public class ViewPoint : MonoBehaviour
                 GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
 
-
-
-
-
             GenerateLineCast(viewpoint, BoundaryLine);
         }
         else
@@ -192,17 +193,18 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
         }
-
-        if (bMesh)
-        {
-            GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
-        }
     }
 
     private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
     {
+        Debug.Log("before sort" + criticalPoints.Count);
         List<Vector2> sortedcriticalPointsList = criticalPoints.ToList<Vector2>();
         sortedcriticalPointsList.Sort(compareByAngle);
+        // Debug.Log("after sort" + sortedcriticalPointsList.Count);
+        foreach (Vector2 v1 in sortedcriticalPointsList)
+        {
+            Debug.Log(v1);
+        }
 
         for (int i = 0; i < sortedcriticalPointsList.Count; i++)
         {
