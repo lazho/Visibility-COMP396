@@ -681,17 +681,17 @@ PrefabInstance:
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
       propertyPath: obstacles.Array.data[0].obstaclePoints.Array.data[0].x
-      value: 6
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
       propertyPath: obstacles.Array.data[0].obstaclePoints.Array.data[0].y
-      value: -2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
       propertyPath: obstacles.Array.data[0].obstaclePoints.Array.data[1].x
-      value: 12
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
@@ -701,12 +701,12 @@ PrefabInstance:
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
       propertyPath: obstacles.Array.data[0].obstaclePoints.Array.data[2].x
-      value: 9
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}
       propertyPath: obstacles.Array.data[0].obstaclePoints.Array.data[2].y
-      value: -5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
         type: 3}

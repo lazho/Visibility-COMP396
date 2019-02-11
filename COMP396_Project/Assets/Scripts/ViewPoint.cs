@@ -29,6 +29,7 @@ public class ViewPoint : MonoBehaviour
     DrawObstacle drawobstacle;
 
     LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
+    GameObject viewpoint;
 
     // Start is called before the first frame update
     void Start()
@@ -40,7 +41,7 @@ public class ViewPoint : MonoBehaviour
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
-        GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+        viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
             // TODO replace (0,0)
@@ -67,7 +68,7 @@ public class ViewPoint : MonoBehaviour
         /*
         if (!drawobstacle.bUserDefine)
         {
-            GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+            viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
             {
@@ -123,11 +124,11 @@ public class ViewPoint : MonoBehaviour
         criticalPoints.Clear();
         if (BoundaryLine.Length != 0)
         {
-
             foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
             {
                 GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
+            
 
             GenerateLineCast(viewpoint, BoundaryLine);
         }
@@ -135,6 +136,13 @@ public class ViewPoint : MonoBehaviour
         {
             Debug.Log("No element in BoundaryLine.");
         }
+
+        /*
+        foreach (Vector2 critical in criticalPoints)
+        {
+            Debug.Log(critical);
+        }
+        */
 
     }
 
@@ -170,12 +178,16 @@ public class ViewPoint : MonoBehaviour
 
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
+                        // TODO delete debug
+                        Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                         criticalPoints.AddFirst(rayCastHit2D.point);
                         continue;
                     }
                     else
                     {
                         // that is what I want
+                        // TODO delete debug
+                        Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                         hitPoint = rayCastHit2D.point;
                         criticalPoints.AddFirst(hitPoint);
                         break;
@@ -183,6 +195,8 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
+                    // TODO delete debug
+                    Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                     hitPoint = rayCastHit2D.point;
                     criticalPoints.AddFirst(hitPoint);
                     break;
@@ -197,60 +211,112 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
     {
+        /*
         Debug.Log("before sort" + criticalPoints.Count);
+        foreach (Vector2 v1 in criticalPoints)
+        {
+            Debug.Log(v1);
+        }
+        */
         List<Vector2> sortedcriticalPointsList = criticalPoints.ToList<Vector2>();
         sortedcriticalPointsList.Sort(compareByAngle);
-        // Debug.Log("after sort" + sortedcriticalPointsList.Count);
+        Debug.Log("after sort" + sortedcriticalPointsList.Count);
+
+        
         foreach (Vector2 v1 in sortedcriticalPointsList)
         {
             Debug.Log(v1);
         }
 
-        for (int i = 0; i < sortedcriticalPointsList.Count; i++)
-        {
-            GenerateMeshTriangle(viewpoint, sortedcriticalPointsList[i], sortedcriticalPointsList[(i + 1) % sortedcriticalPointsList.Count]);
-        }
+
+        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList);
     }
 
-    private void GenerateMeshTriangle(GameObject viewpoint, Vector2 point1, Vector2 point2)
+    private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
     {
         MeshFilter meshfilter = MeshManager.GetComponent<MeshFilter>();
         Mesh mesh = meshfilter.mesh;
 
+        
         // Vertices
-        Vector3[] vertices = new Vector3[]
+        criticalPoints.Add(viewpoint.transform.position);
+        Vector3[] vertices = new Vector3[criticalPoints.Count];
+        for (int i = 0; i < criticalPoints.Count; i++ )
         {
-            viewpoint.transform.position,
-            point1,
-            point2
-        };
+            vertices[i] = criticalPoints[i];
+        }
 
         // Triangles
-        int[] triangles = new int[]
+        int[] triangles;
+        GenerateTrianglePositionOrder(vertices.Length - 1, out triangles);
+        /*
+        foreach(int i in triangles)
         {
-            0, 1, 2,
-        };
+            Debug.Log(i + ":" + vertices[i]);
+        }
+        */
+        
+        
+        mesh.Clear();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+
 
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
+
+    }
+
+    private void GenerateTrianglePositionOrder(int length, out int[] triangles)
+    {
+        triangles = new int[length * 3];
+        for (int i = 0; i < length; i++)
+        {
+            triangles[3 * i] = i;
+            triangles[3 * i + 1] = (i + 1) % length;
+            triangles[3 * i + 2] = length;
+        }
     }
 
     // compare two vector 
     private int compareByAngle(Vector2 v1, Vector2 v2)
     {
+        v1 = new Vector2(v1.x - viewpoint.transform.position.x, v1.y - viewpoint.transform.position.y);
+        v2 = new Vector2(v2.x - viewpoint.transform.position.x, v2.y - viewpoint.transform.position.y);
+
         float angle1 = Vector2.Angle(v1, new Vector2(1, 0));
         float angle2 = Vector2.Angle(v2, new Vector2(1, 0));
 
-        if (angle1 == angle2 && v1.y == v2.y)
-        {
-            return 0;
-        }
-
         if (v1.y == 0 || v2.y == 0)
         {
-            if (v1.y == 0)
+            if (v1.y == 0 && v2.y == 0)
+            {
+                if (v1.x > 0)
+                {
+                    if(v2.x > 0)
+                    {
+                        return v1.x > v2.x ? 1 : -1;
+                    } else
+                    {
+                        return -1;
+                    }
+                }
+                else
+                {
+                    if (v2.x > 0)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return v1.x > v2.x ? -1 : 1;
+                    }
+                }
+            }
+            else if (v1.y == 0)
             {
                 if (v1.x > 0)
                 {
@@ -277,11 +343,24 @@ public class ViewPoint : MonoBehaviour
         {
             if (v1.y > 0)
             {
-                return angle1 < angle2 ? 1 : -1;
+                if (angle1 == angle2)
+                {
+                    return v1.y > v2.y ? -1 : 1;
+                } else
+                {
+                    return angle1 < angle2 ? 1 : -1;
+                }
             }
             else
             {
-                return angle1 > angle2 ? 1 : -1;
+                if (angle1 == angle2)
+                {
+                    return v1.y > v2.y ? -1 : 1;
+                }
+                else
+                {
+                    return angle1 < angle2 ? -1 : 1;
+                }
             }
         }
         else
