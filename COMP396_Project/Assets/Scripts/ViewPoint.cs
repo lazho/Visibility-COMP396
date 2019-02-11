@@ -41,6 +41,7 @@ public class ViewPoint : MonoBehaviour
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
+        /*
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
@@ -58,6 +59,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
+        */
 
 
     }
@@ -65,7 +67,7 @@ public class ViewPoint : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*
+        
         if (!drawobstacle.bUserDefine)
         {
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
@@ -73,14 +75,18 @@ public class ViewPoint : MonoBehaviour
             if (viewpoint)
             {
                 // TODO replace (0,0)
-                viewpoint.transform.position = new Vector2(0, 0);
-                    // new Vector2(GetMousePosition().x, GetMousePosition().y);
+                viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
                 if (isInBoundry(viewpoint.transform.position))
                 {
                     GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
                     GenerateCriticalPoint(viewpoint);
                     Destroy(viewpointPrefab, 0.02f);
+                }
+
+                if (bMesh)
+                {
+                    GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
                 }
             }
         }
@@ -90,7 +96,7 @@ public class ViewPoint : MonoBehaviour
             BoundaryLine = drawboundary.GetBoundaryLine();
             ObstaclesLine = drawobstacle.GetObstacles();
         }
-        */
+        
     }
 
     // Determine whether a point is inside boundry or not
@@ -179,7 +185,7 @@ public class ViewPoint : MonoBehaviour
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
                         // TODO delete debug
-                        Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                        // Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                         criticalPoints.AddFirst(rayCastHit2D.point);
                         continue;
                     }
@@ -187,7 +193,7 @@ public class ViewPoint : MonoBehaviour
                     {
                         // that is what I want
                         // TODO delete debug
-                        Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                        //  Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                         hitPoint = rayCastHit2D.point;
                         criticalPoints.AddFirst(hitPoint);
                         break;
@@ -196,13 +202,13 @@ public class ViewPoint : MonoBehaviour
                 else
                 {
                     // TODO delete debug
-                    Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                    // Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                     hitPoint = rayCastHit2D.point;
                     criticalPoints.AddFirst(hitPoint);
                     break;
                 }
             }
-            if (!bMesh)
+            // if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
