@@ -41,12 +41,18 @@ public class ViewPoint : MonoBehaviour
         if (!drawobstacle.bUserDefine)
         {
             GameObject viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-            viewpoint.transform.position = new Vector2(-10, -4);
-                //new Vector2(Mathf.Clamp(GetMousePosition().x, -15, 15), Mathf.Clamp(GetMousePosition().y, -8, 8));
-            GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
-            GenerateCriticalPoint(viewpoint);
-            Destroy(viewpointPrefab, 0.02f);
+            if (viewpoint)
+            {
+                viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
+                if (isInBoundry(viewpoint.transform.position))
+                {
+                    GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+
+                    GenerateCriticalPoint(viewpoint);
+                    Destroy(viewpointPrefab, 0.02f);
+                }
+            }
         }
         else
         {
@@ -56,22 +62,45 @@ public class ViewPoint : MonoBehaviour
         }
     }
 
+    // Determine whether a point is inside boundry or not
+    private bool isInBoundry(Vector2 point)
+    {
+        int BoundaryLength = BoundaryLine.Length, i = 0;
+        bool inside = false;
+        float pointX = point.x, pointY = point.y;
+        float startX, startY, endX, endY;
+        Vector2 endpoint = BoundaryLine[BoundaryLine.Length - 1];
+        endX = endpoint.x;
+        endY = endpoint.y;
+        while (i < BoundaryLength)
+        {
+            startX = endX;
+            startY = endY;
+            endpoint = BoundaryLine[i++];
+            endX = endpoint.x;
+            endY = endpoint.y;
+            inside ^= (endY > pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
+        }
+        return inside;
+    }
+
+    /**
+* 
+* @invariant viewpoint != null
+*/
     private void GenerateCriticalPoint(GameObject viewpoint)
     {
-        if (viewpoint)
+        if (BoundaryLine.Length != 0)
         {
-            if (BoundaryLine.Length != 0)
+            GenerateLineCast(viewpoint, BoundaryLine);
+            foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
             {
-                GenerateLineCast(viewpoint, BoundaryLine);
-                foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
-                {
-                    GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
-                }
+                GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
-            else
-            {
-                Debug.Log("No element in BoundaryLine.");
-            }
+        }
+        else
+        {
+            Debug.Log("No element in BoundaryLine.");
         }
     }
 
@@ -90,27 +119,22 @@ public class ViewPoint : MonoBehaviour
         LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
         Vector2 hitPoint = new Vector2();
 
-        RaycastHit2D[] rayCastHits2D1 = Physics2D.RaycastAll(new Vector2(0,-1), new Vector2(1, 1));
+        RaycastHit2D[] rayCastHits2D1 = Physics2D.RaycastAll(new Vector2(0, -1), new Vector2(1, 1));
 
-        Debug.Log(rayCastHits2D1.Length + " " + rayCastHits2D1[0].point + rayCastHits2D1[1].point + rayCastHits2D1[2].point);
+        // Debug.Log(rayCastHits2D1.Length + " " + rayCastHits2D1[0].point + rayCastHits2D1[1].point + rayCastHits2D1[2].point);
 
         for (int i = 0; i < endPoints.Length; i++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
 
-
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
-
-
-
-          
 
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
                 // if the hit result is the same position as obstacle position
                 if (Math.Abs(rayCastHit2D.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayCastHit2D.point.y - endPoints[i].y) < ACCURACY)
                 {
-                    
+
                     // Instantiate(IntersectionPointPrefab, rayHit.point, Quaternion.identity);
                     criticalPoints.AddFirst(rayCastHit2D.point);
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
@@ -133,7 +157,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-                    
+
                     hitPoint = rayCastHit2D.point;
                     //Debug.Log(endPoints[i] + "  " + hitPoint);
                     break;
@@ -141,7 +165,6 @@ public class ViewPoint : MonoBehaviour
             }
             // Debug.Log("endPoint: " + endPoints[i] + "  hitPoint:" + hitPoint + "  viewPoint: " + viewpoint.transform.position + "direction:" + direction);
             criticalPoints.AddFirst(hitPoint);
-            
 
 
             LinkedList<GameObject> crticalpointsPrefab = new LinkedList<GameObject>();
@@ -150,12 +173,12 @@ public class ViewPoint : MonoBehaviour
             foreach (Vector2 criticalpoint in criticalPoints)
             {
                 crticalpointsPrefab.AddLast(Instantiate(IntersectionPointPrefab, hitPoint, Quaternion.identity));
-                
+
                 // TODO use line renderer to generate the debug line
 
                 GameObject newLineGen = Instantiate(lineGeneratorPrefab);
                 LineRenderer lRend = newLineGen.GetComponent<LineRenderer>();
-                if(lRend)
+                if (lRend)
                 {
                     // viewpoint and the end points
                     lRend.positionCount = 2;
@@ -178,7 +201,7 @@ public class ViewPoint : MonoBehaviour
             {
                 Destroy(lineRenderer, 0.03f);
             }
-            
+
         }
     }
 

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4196113160231951352}
   - component: {fileID: 4196113160231951353}
-  - component: {fileID: 354989143}
   m_Layer: 0
   m_Name: ObstacleManager
   m_TagString: Untagged
@@ -48,45 +47,3 @@ MonoBehaviour:
   linePointPrefab: {fileID: 0}
   obstacles: []
   bUserDefine: 0
---- !u!60 &354989143
-PolygonCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4196113160231951358}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: -8, y: 3}
-      - {x: -7, y: 7}
-      - {x: -1, y: 5}
-      - {x: -6, y: -1}
-    - - {x: -9, y: -7}
-      - {x: -8, y: 1}
-      - {x: -7, y: -3}
-    - - {x: 5, y: 6}
-      - {x: 6, y: 6}
-      - {x: 6, y: 5}
-    - - {x: 7, y: 4}
-      - {x: 14, y: 5}
-      - {x: 8, y: 1}
-    - - {x: 6, y: -2}
-      - {x: 12, y: 0}
-      - {x: 9, y: -5}
-      - {x: 3, y: -7}

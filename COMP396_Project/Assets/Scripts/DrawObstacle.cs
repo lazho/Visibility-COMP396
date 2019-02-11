@@ -53,6 +53,8 @@ public class DrawObstacle : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                // TODO trianglization the obstacles
+                
                 // Add new obstacle to obstacles
                 Obstacle[] temp = new Obstacle[obstacles.Length + 1];
                 for (int i = 0; i < obstacles.Length; i++)
