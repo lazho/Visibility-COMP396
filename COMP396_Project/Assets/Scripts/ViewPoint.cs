@@ -49,7 +49,7 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
-        
+        /*
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
@@ -67,6 +67,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
+        */
         
         
     }
@@ -77,7 +78,6 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            /*
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -101,12 +101,9 @@ public class ViewPoint : MonoBehaviour
                     {
                         mesh.Clear();
                     }
-
                 }
                 position = viewpoint.transform.position;
             }
-            */
-            
         }
         else
         {
@@ -232,7 +229,7 @@ public class ViewPoint : MonoBehaviour
                     break;
                 }
             }
-            // if (!bMesh)
+            if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
@@ -350,13 +347,21 @@ public class ViewPoint : MonoBehaviour
                 // p2 = (0, 0)
                 return o2.magnitude > (p1 - o2).magnitude ? true : false;
             }
-            else if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
+            else if (CompareVector2(p1.normalized, p2.normalized))
             {
-                return false;
+                // same ling
+                if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
+                {
+                    return false;
+                }
+                else
+                {
+                    return (o2.magnitude >= p1.magnitude && o2.magnitude >= p1.magnitude) ? true : false;
+                }
             }
             else
             {
-                return (o2.magnitude >= p1.magnitude && o2.magnitude >= p1.magnitude) ? true : false;
+                return false;
             }
         }
         else
