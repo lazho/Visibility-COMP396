@@ -13,6 +13,8 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
 
+    
+
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
@@ -33,6 +35,9 @@ public class ViewPoint : MonoBehaviour
     LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
     GameObject viewpoint;
 
+    //Debug
+    [SerializeField] private Vector2 position;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,11 +49,12 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
+        /*
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
             // TODO replace (0,0)
-            viewpoint.transform.position = new Vector2(0, -2);
+            viewpoint.transform.position = new Vector2(-10, -4);
             if (isInBoundry(viewpoint.transform.position))
             {
                 GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
@@ -61,11 +67,9 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
-
-
-
-
-
+        */
+        
+        
     }
 
     // Update is called once per frame
@@ -74,7 +78,7 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            /*
+            
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -100,10 +104,9 @@ public class ViewPoint : MonoBehaviour
                     }
 
                 }
+                position = viewpoint.transform.position;
             }
-            */
-
-
+            
         }
         else
         {
@@ -154,14 +157,6 @@ public class ViewPoint : MonoBehaviour
         {
             Debug.Log("No element in BoundaryLine.");
         }
-
-        /*
-        foreach (Vector2 critical in criticalPoints)
-        {
-            Debug.Log(critical);
-        }
-        */
-
     }
 
     private Vector3 GetMousePosition()
@@ -178,18 +173,23 @@ public class ViewPoint : MonoBehaviour
     {
         Vector2 hitPoint = new Vector2();
 
-
-
         for (int i = 0; i < endPoints.Length; i++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
 
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
-            if (rayCastHits2D[0].point.magnitude > new Vector2(endPoints[i].x, endPoints[i].y).magnitude)
+            if (!CompareVector2(endPoints[i], rayCastHits2D[0].point))
             {
-                // force to add the critical point
-                criticalPoints.AddFirst(endPoints[i]);
+                if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude
+                > new Vector2(endPoints[i].x - viewpoint.transform.position.x, endPoints[i].y - viewpoint.transform.position.y).magnitude)
+                {
+                    // force to add the critical point
+                    if (!criticalPoints.Contains(endPoints[i]))
+                    {
+                        criticalPoints.AddFirst(endPoints[i]);
+                    }
+                }
             }
 
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
@@ -213,20 +213,26 @@ public class ViewPoint : MonoBehaviour
                     }
                     else
                     {
+                        
+                        if (!criticalPoints.Contains(rayCastHit2D.point))
+                        {
+                            criticalPoints.AddFirst(rayCastHit2D.point);
+                        }
                         hitPoint = rayCastHit2D.point;
-                        criticalPoints.AddFirst(hitPoint);
                         break;
                     }
                 }
                 else
                 {
-                    Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                    if (!criticalPoints.Contains(rayCastHit2D.point))
+                    {
+                        criticalPoints.AddFirst(rayCastHit2D.point);
+                    }
                     hitPoint = rayCastHit2D.point;
-                    criticalPoints.AddFirst(hitPoint);
                     break;
                 }
             }
-            // if (!bMesh)
+            if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
@@ -337,11 +343,12 @@ public class ViewPoint : MonoBehaviour
             if (CompareVector2(o2 - p1, o2))
             {
                 // p1 = (0, 0)
-                return o2.magnitude > p2.magnitude ? true : false;
+                return o2.magnitude > (p2 - o2).magnitude ? true : false;
             }
             else if (CompareVector2(o2 - p2, o2))
             {
-                return o2.magnitude > p1.magnitude ? true : false;
+                // p2 = (0, 0)
+                return o2.magnitude > (p1 - o2).magnitude ? true : false;
             }
             else if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
             {
