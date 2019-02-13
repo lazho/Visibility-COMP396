@@ -54,7 +54,7 @@ public class ViewPoint : MonoBehaviour
         if (viewpoint)
         {
             // TODO replace (0,0)
-            viewpoint.transform.position = new Vector2(-10, -4);
+            viewpoint.transform.position = new Vector2(-9, 0);
             if (isInBoundry(viewpoint.transform.position))
             {
                 GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
