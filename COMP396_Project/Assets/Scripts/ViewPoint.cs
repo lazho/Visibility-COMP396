@@ -22,7 +22,7 @@ public class ViewPoint : MonoBehaviour
     private float offsetX = 16f;
     private float offsetY = 9f;
 
-    public readonly double ACCURACY = 0.01;
+    public readonly double ACCURACY = 0.001;
 
     // cache variable
     DrawBoundary drawboundary;
@@ -43,12 +43,12 @@ public class ViewPoint : MonoBehaviour
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
-        /*
+
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
             // TODO replace (0,0)
-            viewpoint.transform.position = new Vector2(0, 0);
+            viewpoint.transform.position = new Vector2(0, -2);
             if (isInBoundry(viewpoint.transform.position))
             {
                 GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
@@ -61,7 +61,9 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
-        */
+
+
+
 
 
     }
@@ -69,14 +71,14 @@ public class ViewPoint : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
         if (!drawobstacle.bUserDefine)
         {
+            /*
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
             {
-                // TODO replace (0,0)
                 viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
                 if (isInBoundry(viewpoint.transform.position))
                 {
@@ -92,11 +94,16 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-                    mesh.Clear();
-                }
+                    if (mesh)
+                    {
+                        mesh.Clear();
+                    }
 
-                
+                }
             }
+            */
+
+
         }
         else
         {
@@ -104,7 +111,6 @@ public class ViewPoint : MonoBehaviour
             BoundaryLine = drawboundary.GetBoundaryLine();
             ObstaclesLine = drawobstacle.GetObstacles();
         }
-        
     }
 
     // Determine whether a point is inside boundry or not
@@ -124,7 +130,7 @@ public class ViewPoint : MonoBehaviour
             endpoint = BoundaryLine[i++];
             endX = endpoint.x;
             endY = endpoint.y;
-            inside ^= (endY > pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
+            inside ^= (endY >= pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
         }
         return inside;
     }
@@ -142,8 +148,6 @@ public class ViewPoint : MonoBehaviour
             {
                 GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
-            
-
             GenerateLineCast(viewpoint, BoundaryLine);
         }
         else
@@ -174,16 +178,24 @@ public class ViewPoint : MonoBehaviour
     {
         Vector2 hitPoint = new Vector2();
 
+
+
         for (int i = 0; i < endPoints.Length; i++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
 
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
+            if (rayCastHits2D[0].point.magnitude > new Vector2(endPoints[i].x, endPoints[i].y).magnitude)
+            {
+                // force to add the critical point
+                criticalPoints.AddFirst(endPoints[i]);
+            }
+
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
                 // if the hit result is the same position as obstacle position
-                if (Math.Abs(rayCastHit2D.point.x - endPoints[i].x) < ACCURACY && Math.Abs(rayCastHit2D.point.y - endPoints[i].y) < ACCURACY)
+                if (CompareVector2(rayCastHit2D.point, endPoints[i]))
                 {
 
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
@@ -192,16 +204,15 @@ public class ViewPoint : MonoBehaviour
 
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
-                        // TODO delete debug
-                        // Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
-                        criticalPoints.AddFirst(rayCastHit2D.point);
+
+                        if (!criticalPoints.Contains(rayCastHit2D.point))
+                        {
+                            criticalPoints.AddFirst(rayCastHit2D.point);
+                        }
                         continue;
                     }
                     else
                     {
-                        // that is what I want
-                        // TODO delete debug
-                        //  Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                         hitPoint = rayCastHit2D.point;
                         criticalPoints.AddFirst(hitPoint);
                         break;
@@ -209,8 +220,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-                    // TODO delete debug
-                    // Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
+                    Instantiate(ViewPointPrefab, rayCastHit2D.point, Quaternion.identity);
                     hitPoint = rayCastHit2D.point;
                     criticalPoints.AddFirst(hitPoint);
                     break;
@@ -225,25 +235,127 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
     {
-        /*
-        Debug.Log("before sort" + criticalPoints.Count);
-        foreach (Vector2 v1 in criticalPoints)
-        {
-            Debug.Log(v1);
-        }
-        */
-        List<Vector2> sortedcriticalPointsList = criticalPoints.ToList<Vector2>();
-        sortedcriticalPointsList.Sort(compareByAngle);
+        List<Vector2> sortedcriticalPointsList = sortCriticalPointClockWise(criticalPoints.ToList<Vector2>());
         Debug.Log("after sort" + sortedcriticalPointsList.Count);
+        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList);
+    }
 
-        
-        foreach (Vector2 v1 in sortedcriticalPointsList)
+    private List<Vector2> sortCriticalPointClockWise(List<Vector2> list)
+    {
+
+
+        list.Sort(compareByAngle);
+        Debug.Log("after:");
+        foreach (Vector2 v1 in list)
         {
             Debug.Log(v1);
         }
 
+        int cur = 0;
+        // the index of previous node
+        int pre = list.Count - 1;
+        // the index of next node
+        int next = cur + 1;
+        while (cur < list.Count)
+        {
+            int end = cur;
+            while (end + 1 < list.Count && compareByAngle(list[end], list[end + 1]) == 0)
+            {
+                end++;
+                next++;
+                next %= list.Count;
+            }
+            // List with index from "cur" to "end" are all in the same line
 
-        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList);
+            if (end > cur)
+            {
+                Vector2 preNode = list[pre];
+                Vector2 nextNode = list[next];
+                bool test1 = isInSameObstaclesLine(list[cur], preNode);
+                bool test2 = isInSameObstaclesLine(list[end], nextNode);
+                if (!test1 && !test2)
+                {
+                    // swap the order
+                    for (int i = 0; i <= (end - cur) / 2; i++)
+                    {
+                        Vector2 temp = list[cur + i];
+                        list[cur + i] = list[end - i];
+                        list[end - i] = temp;
+                    }
+                }
+            }
+            cur = end + 1;
+            pre = end;
+            next = cur + 1;
+            next %= list.Count;
+        }
+        return list;
+    }
+    /**
+     * Determine whether two points are on the same obstacle line
+     */
+    private bool isInSameObstaclesLine(Vector2 point1, Vector2 point2)
+    {
+        bool result = false;
+        result |= isInSameObstacleLine(point1, point2, BoundaryLine);
+
+        foreach (DrawObstacle.Obstacle obstacle in ObstaclesLine)
+        {
+            result |= isInSameObstacleLine(point1, point2, obstacle.obstaclePoints);
+        }
+
+        return result;
+    }
+
+    private bool isInSameObstacleLine(Vector2 point1, Vector2 point2, Vector3[] obstaclePoints)
+    {
+        bool result = false;
+        for (int i = 0; i < obstaclePoints.Length; i++)
+        {
+            result |= isSameLine(point1, point2, obstaclePoints[i], obstaclePoints[(i + 1) % obstaclePoints.Length]);
+        }
+        return result;
+    }
+
+    private bool isSameLine(Vector2 point1, Vector2 point2, Vector2 obstaclePoint1, Vector2 obstaclePoint2)
+    {
+        // move to the original
+        
+        Vector2 p1 = point1 - obstaclePoint1;
+        Vector2 p2 = point2 - obstaclePoint1;
+        Vector2 o1 = obstaclePoint1 - obstaclePoint1;
+        Vector2 o2 = obstaclePoint2 - obstaclePoint1;
+        
+
+        // compute the direction
+        Vector2 directionPoint = p2 - p1;
+        Vector2 directionObstaclePoint = (o2 - o1).normalized;
+
+        if (CompareVector2((p2 - p1).normalized, directionObstaclePoint) || CompareVector2((p1 - p2).normalized, directionObstaclePoint))
+        {
+            // detect the range
+            if (CompareVector2(o2 - p1, o2))
+            {
+                // p1 = (0, 0)
+                return o2.magnitude > p2.magnitude ? true : false;
+            }
+            else if (CompareVector2(o2 - p2, o2))
+            {
+                return o2.magnitude > p1.magnitude ? true : false;
+            }
+            else if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
+            {
+                return false;
+            }
+            else
+            {
+                return (o2.magnitude >= p1.magnitude && o2.magnitude >= p1.magnitude) ? true : false;
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
@@ -251,11 +363,11 @@ public class ViewPoint : MonoBehaviour
         meshfilter = MeshManager.GetComponent<MeshFilter>();
         mesh = meshfilter.mesh;
 
-        
+
         // Vertices
         criticalPoints.Add(viewpoint.transform.position);
         Vector3[] vertices = new Vector3[criticalPoints.Count];
-        for (int i = 0; i < criticalPoints.Count; i++ )
+        for (int i = 0; i < criticalPoints.Count; i++)
         {
             vertices[i] = criticalPoints[i];
         }
@@ -269,8 +381,7 @@ public class ViewPoint : MonoBehaviour
             Debug.Log(i + ":" + vertices[i]);
         }
         */
-        
-        
+
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
@@ -296,6 +407,7 @@ public class ViewPoint : MonoBehaviour
     }
 
     // compare two vector 
+    // 0 -> v1 == v2; -1 -> v1 < v2; 1 -> v1 > v2
     private int compareByAngle(Vector2 v1, Vector2 v2)
     {
         v1 = new Vector2(v1.x - viewpoint.transform.position.x, v1.y - viewpoint.transform.position.y);
@@ -304,82 +416,23 @@ public class ViewPoint : MonoBehaviour
         float angle1 = Vector2.Angle(v1, new Vector2(1, 0));
         float angle2 = Vector2.Angle(v2, new Vector2(1, 0));
 
-        if (v1.y == 0 || v2.y == 0)
+        if (v1.y > 0)
         {
-            if (v1.y == 0 && v2.y == 0)
-            {
-                if (v1.x > 0)
-                {
-                    if(v2.x > 0)
-                    {
-                        return v1.x > v2.x ? 1 : -1;
-                    } else
-                    {
-                        return -1;
-                    }
-                }
-                else
-                {
-                    if (v2.x > 0)
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return v1.x > v2.x ? -1 : 1;
-                    }
-                }
-            }
-            else if (v1.y == 0)
-            {
-                if (v1.x > 0)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return v2.y > 0 ? -1 : 1;
-                }
-            }
-            else
-            {
-                if (v2.x > 0)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return v1.y > 0 ? 1 : -1;
-                }
-            }
+            angle1 = 360 - angle1;
         }
-        else if (v1.y * v2.y > 0)
+
+        if (v2.y > 0)
         {
-            if (v1.y > 0)
-            {
-                if (angle1 == angle2)
-                {
-                    return v1.y > v2.y ? -1 : 1;
-                } else
-                {
-                    return angle1 < angle2 ? 1 : -1;
-                }
-            }
-            else
-            {
-                if (angle1 == angle2)
-                {
-                    return v1.y > v2.y ? -1 : 1;
-                }
-                else
-                {
-                    return angle1 < angle2 ? -1 : 1;
-                }
-            }
+            angle2 = 360 - angle2;
+        }
+
+        if (Math.Abs(angle1 - angle2) < ACCURACY)
+        {
+            return 0;
         }
         else
         {
-            return v1.y > 0 ? 1 : -1;
+            return angle1 > angle2 ? 1 : -1;
         }
     }
 
@@ -428,5 +481,10 @@ public class ViewPoint : MonoBehaviour
     private float CrossProduct(Vector2 vector1, Vector2 vector2)
     {
         return vector1.x * vector2.y - vector1.y * vector2.x;
+    }
+
+    private bool CompareVector2(Vector2 v1, Vector2 v2)
+    {
+        return Math.Abs(v1.x - v2.x) < ACCURACY && Math.Abs(v1.y - v2.y) < ACCURACY;
     }
 }
