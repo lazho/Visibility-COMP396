@@ -160,16 +160,14 @@ public class DrawObstacle : MonoBehaviour
     {
         foreach(Obstacle obstacle in obstacles)
         {
-            if (isConcave(obstacle))
+            Obstacle remainObstacle = obstacle;
+            while (isConcave(remainObstacle))
             {
-                // triangulation
-                // TODO triangulation the obstacle
-                Debug.Log("Need triangulation");
+                // Triangul
+                Obstacle splitedObstacle = triangulationSplit(remainObstacle);
+                addCollider(splitedObstacle);
             }
-            else
-            {
-                addCollider(obstacle);
-            }
+            addCollider(remainObstacle);
         }
     }
 
@@ -184,4 +182,111 @@ public class DrawObstacle : MonoBehaviour
         }
         newPolygonCollider2D.SetPath(0, obstacles2D);
     }
+
+
+    /**
+     * Split the concave obstacle based on trigulation purpose. Find a splitable vertex, 
+     * then split the remain obstacle get a triangle obstacle and another remain polygon.
+     * 
+     * @invariant remainObstacle.obstaclePoints.Length > 2
+     * @pre isConcave(remainObstacle)
+     * @para remainObstacle  the obstacle need to be trianglized
+     * @return the new trianle obstacle
+     */
+    public Obstacle triangulationSplit(Obstacle remainObstacle)
+    {
+        // Search for the concave point
+        int searchIndex = 0;
+        List<int> covexIndex = new List<int>();
+        for (searchIndex = 0; searchIndex < remainObstacle.obstaclePoints.Length; searchIndex++)
+        {
+            List<Vector3> polygon = new List<Vector3>(remainObstacle.obstaclePoints);
+            polygon.RemoveAt(searchIndex);
+            if (DrawBoundary.isPointInsidePolygon(remainObstacle.obstaclePoints[searchIndex], polygon.ToArray()))
+            {
+                break;
+            }
+            else
+            {
+                covexIndex.Add(searchIndex);
+            }
+        }
+
+        // Search for the splitable point
+        int canFragementIndex = -1;// the index of splitable point
+        for (int i = 0; i < remainObstacle.obstaclePoints.Length; i++)
+        {
+            if (i > searchIndex)
+            {
+                List<Vector3> polygon = new List<Vector3>(remainObstacle.obstaclePoints);
+                polygon.RemoveAt(i);
+                if (!DrawBoundary.isPointInsidePolygon(remainObstacle.obstaclePoints[i], polygon.ToArray()) && IsFragementIndex(i, remainObstacle.obstaclePoints.ToList()))
+                {
+                    canFragementIndex = i;
+                    break;
+                }
+            }
+            else
+            {
+                if (covexIndex.IndexOf(i) != -1 && IsFragementIndex(i, remainObstacle.obstaclePoints.ToList<Vector3>())) 
+                {
+                    canFragementIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (canFragementIndex < 0)
+        {
+            throw new Exception("Data error!! Can not find splitable point");
+        }
+        else
+        {
+            //用可划分顶点将凹多边形划分为一个三角形和一个多边形
+            Obstacle triangle = new Obstacle();
+            Vector3[] triangleObstaclPoint = new Vector3[3];
+            int next = (canFragementIndex == remainObstacle.obstaclePoints.Length - 1) ? 0 : canFragementIndex + 1;
+            int prev = (canFragementIndex == 0) ? remainObstacle.obstaclePoints.Length - 1 : canFragementIndex - 1;
+            triangleObstaclPoint[0] = remainObstacle.obstaclePoints[prev];
+            triangleObstaclPoint[1] = remainObstacle.obstaclePoints[canFragementIndex];
+            triangleObstaclPoint[2] = remainObstacle.obstaclePoints[next];
+            //剔除可划分顶点及索引
+
+            List<Vector3> tempObstclePoints = remainObstacle.obstaclePoints.ToList();
+            tempObstclePoints.RemoveAt(canFragementIndex);
+            remainObstacle.obstaclePoints = tempObstclePoints.ToArray();
+
+            triangle.obstaclePoints = triangleObstaclPoint;
+
+            return triangle;
+        }
+
+        
+    }
+
+    /// <summary>
+    /// 是否是可划分顶点:新的多边形没有顶点在分割的三角形内
+    /// </summary>
+    private static bool IsFragementIndex(int index, List<Vector3> verts)
+    {
+        int len = verts.Count;
+        List<Vector3> triangleVert = new List<Vector3>();
+        int next = (index == len - 1) ? 0 : index + 1;
+        int prev = (index == 0) ? len - 1 : index - 1;
+        triangleVert.Add(verts[prev]);
+        triangleVert.Add(verts[index]);
+        triangleVert.Add(verts[next]);
+        for (int i = 0; i < len; i++)
+        {
+            if (i != index && i != prev && i != next)
+            {
+                if (DrawBoundary.isPointInsidePolygon(verts[i], triangleVert.ToArray()))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
