@@ -54,7 +54,7 @@ public class ViewPoint : MonoBehaviour
         if (viewpoint)
         {
             // TODO replace (0,0)
-            viewpoint.transform.position = new Vector2(-9, 0);
+            viewpoint.transform.position = new Vector2(-8.246318f, -0.4714286f);
             if (isInBoundry(viewpoint.transform.position))
             {
                 GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
@@ -68,8 +68,6 @@ public class ViewPoint : MonoBehaviour
             }
         }
         */
-        
-        
     }
 
     // Update is called once per frame
@@ -78,6 +76,7 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
+            
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -229,7 +228,7 @@ public class ViewPoint : MonoBehaviour
                     break;
                 }
             }
-            if (!bMesh)
+            //if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
@@ -239,20 +238,12 @@ public class ViewPoint : MonoBehaviour
     private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
     {
         List<Vector2> sortedcriticalPointsList = sortCriticalPointClockWise(criticalPoints.ToList<Vector2>());
-        Debug.Log("after sort" + sortedcriticalPointsList.Count);
         GenerateMeshTriangle(viewpoint, sortedcriticalPointsList);
     }
 
     private List<Vector2> sortCriticalPointClockWise(List<Vector2> list)
     {
-
-
         list.Sort(compareByAngle);
-        Debug.Log("after:");
-        foreach (Vector2 v1 in list)
-        {
-            Debug.Log(v1);
-        }
 
         int cur = 0;
         // the index of previous node
@@ -356,7 +347,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-                    return (o2.magnitude >= p1.magnitude && o2.magnitude >= p1.magnitude) ? true : false;
+                    return (o2.magnitude >= p1.magnitude && o2.magnitude >= p2.magnitude) ? true : false;
                 }
             }
             else
@@ -387,12 +378,6 @@ public class ViewPoint : MonoBehaviour
         // Triangles
         int[] triangles;
         GenerateTrianglePositionOrder(vertices.Length - 1, out triangles);
-        /*
-        foreach(int i in triangles)
-        {
-            Debug.Log(i + ":" + vertices[i]);
-        }
-        */
 
         mesh.Clear();
         mesh.vertices = vertices;

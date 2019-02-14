@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/Level 3 (Special obstacles).unity
+    guid: 5dd3f30d23d28ed4da0ede09e4d09ac5
   m_configObjects: {}

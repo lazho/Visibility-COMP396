@@ -53,19 +53,20 @@ public class DrawObstacle : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                // TODO trianglization the obstacles
-                
-                // Add new obstacle to obstacles
-                Obstacle[] temp = new Obstacle[obstacles.Length + 1];
-                for (int i = 0; i < obstacles.Length; i++)
+                if (cacheObstacle.Count > 2)
                 {
-                    temp[i] = obstacles[i];
-                }
-                temp[obstacles.Length] = new Obstacle { obstaclePoints = cacheObstacle.ToArray() };
-                obstacles = temp;
+                    // Add new obstacle to obstacles
+                    Obstacle[] temp = new Obstacle[obstacles.Length + 1];
+                    for (int i = 0; i < obstacles.Length; i++)
+                    {
+                        temp[i] = obstacles[i];
+                    }
+                    temp[obstacles.Length] = new Obstacle { obstaclePoints = cacheObstacle.ToArray() };
+                    obstacles = temp;
 
-                GenerateObstacle(obstacles[obstacles.Length - 1]);
-                cacheObstacle.Clear();
+                    GenerateObstacle(obstacles[obstacles.Length - 1]);
+                    cacheObstacle.Clear();
+                }
             }
 
             if(Input.GetKeyDown(KeyCode.Escape))
@@ -89,11 +90,34 @@ public class DrawObstacle : MonoBehaviour
             // Generate the obstacle points
             foreach (Vector3 obstaclePoint in obstacle.obstaclePoints)
             {
-                // Instantiate(linePointPrefab, obstaclePoint, Quaternion.identity);
+                Instantiate(linePointPrefab, obstaclePoint, Quaternion.identity);
             }
+
             // Generate the obstacles
             GenerateObstacle(obstacle);
+
+            
         }
+    }
+
+    private bool isConcave(Obstacle obstacle)
+    {
+        bool result = isClockWise(obstacle.obstaclePoints[0], obstacle.obstaclePoints[1], obstacle.obstaclePoints[2]);
+        for (int i = 1; i < obstacle.obstaclePoints.Length; i++)
+        {
+            if (isClockWise(obstacle.obstaclePoints[i], 
+                obstacle.obstaclePoints[(i + 1) % obstacle.obstaclePoints.Length], 
+                obstacle.obstaclePoints[(i + 2) % obstacle.obstaclePoints.Length]) != result)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool isClockWise(Vector2 a, Vector2 b, Vector2 c)
+    {
+        return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y) < 0 ? true : false;
     }
 
     private void GenerateNewLine(Vector3[] linePoints)
@@ -136,7 +160,16 @@ public class DrawObstacle : MonoBehaviour
     {
         foreach(Obstacle obstacle in obstacles)
         {
-            addCollider(obstacle);
+            if (isConcave(obstacle))
+            {
+                // triangulation
+                // TODO triangulation the obstacle
+                Debug.Log("Need triangulation");
+            }
+            else
+            {
+                addCollider(obstacle);
+            }
         }
     }
 
