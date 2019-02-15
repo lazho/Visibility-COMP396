@@ -9,7 +9,7 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private Vector3[] BoundaryLine;
     [SerializeField] private GameObject IntersectionPointPrefab;
     [SerializeField] private GameObject ViewPointPrefab;
-    [SerializeField] private DrawObstacle.Obstacle[] ObstaclesLine;
+    [SerializeField] private OBSTACLE.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
 
@@ -23,8 +23,8 @@ public class ViewPoint : MonoBehaviour
     private float offsetY = 9f;
 
     // cache variable
-    DrawBoundary drawboundary;
-    DrawObstacle drawobstacle;
+    BOUNDARY drawboundary;
+    OBSTACLE drawobstacle;
     MeshFilter meshfilter;
     Mesh mesh;
 
@@ -37,8 +37,8 @@ public class ViewPoint : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        drawboundary = GameObject.Find("BoundaryManager").GetComponent<DrawBoundary>();
-        drawobstacle = GameObject.Find("ObstacleManager").GetComponent<DrawObstacle>();
+        drawboundary = GameObject.Find("BoundaryManager").GetComponent<BOUNDARY>();
+        drawobstacle = GameObject.Find("ObstacleManager").GetComponent<OBSTACLE>();
 
         // Generate the obstacles and boundry in advance
         BoundaryLine = drawboundary.GetBoundaryLine();
@@ -63,6 +63,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
+        
         
     }
 
@@ -118,7 +119,7 @@ public class ViewPoint : MonoBehaviour
         criticalPoints.Clear();
         if (BoundaryLine.Length != 0)
         {
-            foreach (DrawObstacle.Obstacle obstacleLine in ObstaclesLine)
+            foreach (OBSTACLE.Obstacle obstacleLine in ObstaclesLine)
             {
                 GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
             }
@@ -134,6 +135,23 @@ public class ViewPoint : MonoBehaviour
     {
         return new Vector2(Input.mousePosition.x / Screen.width * screenWidthInUnits - offsetX, Input.mousePosition.y / Screen.height * screenHeightInUnits - offsetY);
     }
+
+    /*
+    private sealed class Vector2EqComparer : EqualityComparer<Vector2>
+    {
+        public override bool Equals(Vector2 x, Vector2 y)
+        {
+
+            return HelpFunction.Vector2Equal(x, y);
+        }
+
+        public override int GetHashCode(Vector2 obj)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    */
+
 
     /**
      * Generate all the critical points based on the position of the viewpoint and end points
@@ -156,10 +174,7 @@ public class ViewPoint : MonoBehaviour
                 > new Vector2(endPoints[i].x - viewpoint.transform.position.x, endPoints[i].y - viewpoint.transform.position.y).magnitude)
                 {
                     // force to add the critical point
-                    if (!criticalPoints.Contains(endPoints[i]))
-                    {
-                        criticalPoints.AddFirst(endPoints[i]);
-                    }
+                    addPointToCriticalList(endPoints[i]);
                 }
             }
 
@@ -175,30 +190,19 @@ public class ViewPoint : MonoBehaviour
 
                     if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
-
-                        if (!criticalPoints.Contains(rayCastHit2D.point))
-                        {
-                            criticalPoints.AddFirst(rayCastHit2D.point);
-                        }
+                        addPointToCriticalList(rayCastHit2D.point);
                         continue;
                     }
                     else
                     {
-
-                        if (!criticalPoints.Contains(rayCastHit2D.point))
-                        {
-                            criticalPoints.AddFirst(rayCastHit2D.point);
-                        }
+                        addPointToCriticalList(rayCastHit2D.point);
                         hitPoint = rayCastHit2D.point;
                         break;
                     }
                 }
                 else
                 {
-                    if (!criticalPoints.Contains(rayCastHit2D.point))
-                    {
-                        criticalPoints.AddFirst(rayCastHit2D.point);
-                    }
+                    addPointToCriticalList(rayCastHit2D.point);
                     hitPoint = rayCastHit2D.point;
                     break;
                 }
@@ -207,6 +211,23 @@ public class ViewPoint : MonoBehaviour
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
+        }
+    }
+
+    private void addPointToCriticalList(Vector3 point)
+    {
+        bool isContain = false;
+        foreach (Vector2 v in criticalPoints)
+        {
+            if (HelpFunction.Vector2Equal(v, point))
+            {
+                isContain = true;
+                break;
+            }
+        }
+        if (!isContain)
+        {
+            criticalPoints.AddFirst(point);
         }
     }
 
@@ -268,7 +289,7 @@ public class ViewPoint : MonoBehaviour
         bool result = false;
         result |= isInSameObstacleLine(point1, point2, BoundaryLine);
 
-        foreach (DrawObstacle.Obstacle obstacle in ObstaclesLine)
+        foreach (OBSTACLE.Obstacle obstacle in ObstaclesLine)
         {
             result |= isInSameObstacleLine(point1, point2, obstacle.obstaclePoints);
         }
@@ -447,4 +468,6 @@ public class ViewPoint : MonoBehaviour
     {
         return vector1.x * vector2.y - vector1.y * vector2.x;
     }
+
+    
 }

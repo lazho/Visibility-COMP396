@@ -145,12 +145,12 @@ public class HelpFunction : MonoBehaviour
     /// <param name="verts">顺时针排列的顶点列表</param>
     /// <param name="indexes">顶点索引列表</param>
     /// <returns>三角形列表</returns>
-    public static List<DrawObstacle.Obstacle> triangularization(DrawObstacle.Obstacle obstacle)
+    public static List<OBSTACLE.Obstacle> triangularization(OBSTACLE.Obstacle obstacle)
     {
         int len = obstacle.obstaclePoints.Length;
         if (len <= 3)
         {
-            List<DrawObstacle.Obstacle> newObstacleList = new List<DrawObstacle.Obstacle>();
+            List<OBSTACLE.Obstacle> newObstacleList = new List<OBSTACLE.Obstacle>();
             newObstacleList.Add(obstacle);
             return newObstacleList;
         }
@@ -160,7 +160,7 @@ public class HelpFunction : MonoBehaviour
 
         if (searchIndex == -1)
         {
-            List<DrawObstacle.Obstacle> newObstacleList = new List<DrawObstacle.Obstacle>();
+            List<OBSTACLE.Obstacle> newObstacleList = new List<OBSTACLE.Obstacle>();
             newObstacleList.Add(obstacle);
             return newObstacleList;
         }
@@ -197,8 +197,8 @@ public class HelpFunction : MonoBehaviour
         obstacle.obstaclePoints = tempObstclePoints.ToArray();
 
         // Recursion splitting
-        List<DrawObstacle.Obstacle> leaveTriangles = triangularization(obstacle);
-        DrawObstacle.Obstacle newObstacle = new DrawObstacle.Obstacle();
+        List<OBSTACLE.Obstacle> leaveTriangles = triangularization(obstacle);
+        OBSTACLE.Obstacle newObstacle = new OBSTACLE.Obstacle();
         newObstacle.obstaclePoints = tTriangles.ToArray();
         leaveTriangles.Add(newObstacle);
         return leaveTriangles;
@@ -238,7 +238,7 @@ public class HelpFunction : MonoBehaviour
     /// </summary>
     /// <param name="obstacle"> the given obstacle </param>
     /// <returns>-1: if the given obstacle is a not a concave polygon, the index of concave point :otherwise </returns>
-    public static int isConcave(DrawObstacle.Obstacle obstacle)
+    public static int isConcave(OBSTACLE.Obstacle obstacle)
     {
         bool result = isClockWise(obstacle.obstaclePoints[0], obstacle.obstaclePoints[1], obstacle.obstaclePoints[2]);
         for (int i = 1; i < obstacle.obstaclePoints.Length; i++)

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DrawBoundary : MonoBehaviour
+public class BOUNDARY : MonoBehaviour
 {
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField]
@@ -26,14 +26,6 @@ public class DrawBoundary : MonoBehaviour
     {
         GenerateNewLine(BoundaryLine);
         GenerateCollider(BoundaryLine);
-    }
-
-
-
-    // Update is called once per frame
-    void Update()
-    {
-       
     }
 
     private void GenerateNewLine(Vector3[] linePoints)
