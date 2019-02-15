@@ -45,7 +45,7 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
-        /*
+        
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
@@ -63,7 +63,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
-        */
+        
     }
 
     // Update is called once per frame
@@ -72,7 +72,7 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            
+            /*
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -99,6 +99,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 position = viewpoint.transform.position;
             }
+            */
         }
         else
         {
