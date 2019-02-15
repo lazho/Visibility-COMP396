@@ -45,7 +45,7 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
-        
+        /*
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
@@ -63,8 +63,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
-        
-        
+        */
     }
 
     // Update is called once per frame
@@ -73,7 +72,7 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            /*
+            
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -100,7 +99,6 @@ public class ViewPoint : MonoBehaviour
                 }
                 position = viewpoint.transform.position;
             }
-            */
         }
         else
         {
@@ -135,22 +133,6 @@ public class ViewPoint : MonoBehaviour
     {
         return new Vector2(Input.mousePosition.x / Screen.width * screenWidthInUnits - offsetX, Input.mousePosition.y / Screen.height * screenHeightInUnits - offsetY);
     }
-
-    /*
-    private sealed class Vector2EqComparer : EqualityComparer<Vector2>
-    {
-        public override bool Equals(Vector2 x, Vector2 y)
-        {
-
-            return HelpFunction.Vector2Equal(x, y);
-        }
-
-        public override int GetHashCode(Vector2 obj)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    */
 
 
     /**
@@ -207,7 +189,7 @@ public class ViewPoint : MonoBehaviour
                     break;
                 }
             }
-            //if (!bMesh)
+            if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
