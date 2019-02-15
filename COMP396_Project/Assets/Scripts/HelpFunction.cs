@@ -18,7 +18,7 @@ public class HelpFunction : MonoBehaviour
         return (value - other) > epsilon;
     }
 
-    static bool floatEqual(float value, float other)
+    public static bool floatEqual(float value, float other)
     {
         return Mathf.Abs(value - other) < epsilon;
     }
@@ -145,8 +145,7 @@ public class HelpFunction : MonoBehaviour
     /// <param name="verts">顺时针排列的顶点列表</param>
     /// <param name="indexes">顶点索引列表</param>
     /// <returns>三角形列表</returns>
-    public static List<DrawObstacle.Obstacle> WidelyTriangleIndex(DrawObstacle.Obstacle obstacle)
-    //List<Vector3> verts, List<int> indexes)
+    public static List<DrawObstacle.Obstacle> triangularization(DrawObstacle.Obstacle obstacle)
     {
         int len = obstacle.obstaclePoints.Length;
         if (len <= 3)
@@ -197,12 +196,11 @@ public class HelpFunction : MonoBehaviour
         tempObstclePoints.RemoveAt(canFragementIndex);
         obstacle.obstaclePoints = tempObstclePoints.ToArray();
 
-        //递归划分
-        List<DrawObstacle.Obstacle> leaveTriangles = WidelyTriangleIndex(obstacle);
+        // Recursion splitting
+        List<DrawObstacle.Obstacle> leaveTriangles = triangularization(obstacle);
         DrawObstacle.Obstacle newObstacle = new DrawObstacle.Obstacle();
         newObstacle.obstaclePoints = tTriangles.ToArray();
         leaveTriangles.Add(newObstacle);
-        // tTriangles.AddRange(leaveTriangles);
         return leaveTriangles;
     }
 
@@ -232,7 +230,6 @@ public class HelpFunction : MonoBehaviour
             triangles.Add(indexes[i + 2]);
         }
         return triangles;
-
     }
 
 
@@ -259,39 +256,5 @@ public class HelpFunction : MonoBehaviour
     public static bool isClockWise(Vector2 a, Vector2 b, Vector2 c)
     {
         return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y) < 0 ? true : false;
-    }
-
-    private void Start()
-    {
-        /*
-        List<Vector2> list = new List<Vector2>();
-        
-        list.Add(new Vector2(15, -8));
-        list.Add(new Vector2(-15, -8));
-        list.Add(new Vector2(-15, 8));
-        list.Add(new Vector2(15, 8));
-
-        Debug.Log(IsPointInsidePolygon(new Vector2(15, 8), list));
-        Debug.Log(IsPointInsidePolygon(new Vector2(15, 0), list));
-        Debug.Log(IsPointInsidePolygon(new Vector2(0, 0), list));
-        Debug.Log(IsPointInsidePolygon(new Vector2(-15, 8), list));
-        Debug.Log(IsPointInsidePolygon(new Vector2(15, -8), list));
-        Debug.Log(IsPointInsidePolygon(new Vector2(-15, -8), list));
-        */
-
-        List<Vector3> list = new List<Vector3>();
-
-        list.Add(new Vector2(0, 3));
-        list.Add(new Vector2(-3, -2));
-        list.Add(new Vector2(-0, 0));
-        list.Add(new Vector2(3, -2));
-
-        List<int> index = new List<int>();
-        index.Add(0);
-        index.Add(1);
-        index.Add(2);
-        index.Add(3);
-
-        //WidelyTriangleIndex(list, index);
     }
 }

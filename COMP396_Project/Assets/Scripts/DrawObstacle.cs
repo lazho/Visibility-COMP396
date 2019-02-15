@@ -141,7 +141,7 @@ public class DrawObstacle : MonoBehaviour
         foreach(Obstacle obstacle in obstacles)
         {
             List<Obstacle> trianglizedObstacles = new List<Obstacle>();
-            trianglizedObstacles = HelpFunction.WidelyTriangleIndex(obstacle);
+            trianglizedObstacles = HelpFunction.triangularization(obstacle);
             foreach (Obstacle trianglizedObstacle in trianglizedObstacles)
             {
                 addCollider(trianglizedObstacle);

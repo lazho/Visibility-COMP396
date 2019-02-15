@@ -13,8 +13,6 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
 
-    
-
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
@@ -23,8 +21,6 @@ public class ViewPoint : MonoBehaviour
     private float screenHeightInUnits = 18f;
     private float offsetX = 16f;
     private float offsetY = 9f;
-
-    public readonly double ACCURACY = 0.001;
 
     // cache variable
     DrawBoundary drawboundary;
@@ -49,13 +45,13 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
-        /*
+        
         viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
         if (viewpoint)
         {
             // TODO replace (0,0)
-            viewpoint.transform.position = new Vector2(-8.246318f, -0.4714286f);
-            if (isInBoundry(viewpoint.transform.position))
+            viewpoint.transform.position = position;
+            if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
             {
                 GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
@@ -67,7 +63,7 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
             }
         }
-        */
+        
     }
 
     // Update is called once per frame
@@ -76,7 +72,7 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            
+            /*
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
             if (viewpoint)
@@ -103,6 +99,7 @@ public class ViewPoint : MonoBehaviour
                 }
                 position = viewpoint.transform.position;
             }
+            */
         }
         else
         {
@@ -187,7 +184,7 @@ public class ViewPoint : MonoBehaviour
                     }
                     else
                     {
-                        
+
                         if (!criticalPoints.Contains(rayCastHit2D.point))
                         {
                             criticalPoints.AddFirst(rayCastHit2D.point);
@@ -292,12 +289,12 @@ public class ViewPoint : MonoBehaviour
     private bool isSameLine(Vector2 point1, Vector2 point2, Vector2 obstaclePoint1, Vector2 obstaclePoint2)
     {
         // move to the original
-        
+
         Vector2 p1 = point1 - obstaclePoint1;
         Vector2 p2 = point2 - obstaclePoint1;
         Vector2 o1 = obstaclePoint1 - obstaclePoint1;
         Vector2 o2 = obstaclePoint2 - obstaclePoint1;
-        
+
 
         // compute the direction
         Vector2 directionPoint = p2 - p1;
@@ -318,7 +315,7 @@ public class ViewPoint : MonoBehaviour
             }
             else if (HelpFunction.Vector2Equal(p1.normalized, p2.normalized))
             {
-                // same ling
+                // same line
                 if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
                 {
                     return false;
@@ -328,15 +325,8 @@ public class ViewPoint : MonoBehaviour
                     return (o2.magnitude >= p1.magnitude && o2.magnitude >= p2.magnitude) ? true : false;
                 }
             }
-            else
-            {
-                return false;
-            }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
@@ -401,7 +391,7 @@ public class ViewPoint : MonoBehaviour
             angle2 = 360 - angle2;
         }
 
-        if (Math.Abs(angle1 - angle2) < ACCURACY)
+        if (HelpFunction.floatEqual(angle1, angle2))
         {
             return 0;
         }

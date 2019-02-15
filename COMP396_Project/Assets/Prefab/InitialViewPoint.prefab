@@ -51,3 +51,7 @@ MonoBehaviour:
   ObstaclesLine: []
   lineGeneratorPrefab: {fileID: 901533297273027312, guid: 825c7f834fcb96944b314501a9c5ed19,
     type: 3}
+  MeshManager: {fileID: 2943066055433619091, guid: 197e07daf539ff545baafbf1f1adacc1,
+    type: 3}
+  bMesh: 0
+  position: {x: 0, y: 0}
