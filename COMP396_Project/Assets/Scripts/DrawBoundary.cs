@@ -68,27 +68,4 @@ public class DrawBoundary : MonoBehaviour
         boundaryLine2D[boundaryLine.Length] = boundaryLine[0];
         edgeCollider.points = boundaryLine2D;
     }
-
-    // Determine whether a point is inside boundry or not
-    // Method will return false if point is on the boundry line
-    public static bool isPointInsidePolygon(Vector2 point, Vector3[] polygonLine)
-    {
-        int BoundaryLength = polygonLine.Length, i = 0;
-        bool inside = false;
-        float pointX = point.x, pointY = point.y;
-        float startX, startY, endX, endY;
-        Vector2 endpoint = polygonLine[polygonLine.Length - 1];
-        endX = endpoint.x;
-        endY = endpoint.y;
-        while (i < BoundaryLength)
-        {
-            startX = endX;
-            startY = endY;
-            endpoint = polygonLine[i++];
-            endX = endpoint.x;
-            endY = endpoint.y;
-            inside ^= (endY >= pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
-        }
-        return inside;
-    }
 }

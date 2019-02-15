@@ -82,7 +82,7 @@ public class ViewPoint : MonoBehaviour
             if (viewpoint)
             {
                 viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
-                if (DrawBoundary.isPointInsidePolygon(viewpoint.transform.position, BoundaryLine))
+                if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
                 {
                     GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
@@ -153,7 +153,7 @@ public class ViewPoint : MonoBehaviour
 
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
-            if (!CompareVector2(endPoints[i], rayCastHits2D[0].point))
+            if (!HelpFunction.Vector2Equal(endPoints[i], rayCastHits2D[0].point))
             {
                 if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude
                 > new Vector2(endPoints[i].x - viewpoint.transform.position.x, endPoints[i].y - viewpoint.transform.position.y).magnitude)
@@ -169,7 +169,7 @@ public class ViewPoint : MonoBehaviour
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
                 // if the hit result is the same position as obstacle position
-                if (CompareVector2(rayCastHit2D.point, endPoints[i]))
+                if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[i]))
                 {
 
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
@@ -303,20 +303,20 @@ public class ViewPoint : MonoBehaviour
         Vector2 directionPoint = p2 - p1;
         Vector2 directionObstaclePoint = (o2 - o1).normalized;
 
-        if (CompareVector2((p2 - p1).normalized, directionObstaclePoint) || CompareVector2((p1 - p2).normalized, directionObstaclePoint))
+        if (HelpFunction.Vector2Equal((p2 - p1).normalized, directionObstaclePoint) || HelpFunction.Vector2Equal((p1 - p2).normalized, directionObstaclePoint))
         {
             // detect the range
-            if (CompareVector2(o2 - p1, o2))
+            if (HelpFunction.Vector2Equal(o2 - p1, o2))
             {
                 // p1 = (0, 0)
                 return o2.magnitude > (p2 - o2).magnitude ? true : false;
             }
-            else if (CompareVector2(o2 - p2, o2))
+            else if (HelpFunction.Vector2Equal(o2 - p2, o2))
             {
                 // p2 = (0, 0)
                 return o2.magnitude > (p1 - o2).magnitude ? true : false;
             }
-            else if (CompareVector2(p1.normalized, p2.normalized))
+            else if (HelpFunction.Vector2Equal(p1.normalized, p2.normalized))
             {
                 // same ling
                 if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
@@ -456,10 +456,5 @@ public class ViewPoint : MonoBehaviour
     private float CrossProduct(Vector2 vector1, Vector2 vector2)
     {
         return vector1.x * vector2.y - vector1.y * vector2.x;
-    }
-
-    private bool CompareVector2(Vector2 v1, Vector2 v2)
-    {
-        return Math.Abs(v1.x - v2.x) < ACCURACY && Math.Abs(v1.y - v2.y) < ACCURACY;
     }
 }
