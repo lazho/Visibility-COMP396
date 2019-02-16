@@ -12,6 +12,7 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private OBSTACLE.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
+    [SerializeField] private bool debug = false;
 
     // Test 
     // Whether use mesh to show the visibility effect or not
@@ -45,22 +46,24 @@ public class ViewPoint : MonoBehaviour
         ObstaclesLine = drawobstacle.GetObstacles();
 
 
-        
-        viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-        if (viewpoint)
+        if (debug)
         {
-            // TODO replace (0,0)
-            viewpoint.transform.position = position;
-            if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
+            viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
+            if (viewpoint)
             {
-                GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+                // TODO replace (0,0)
+                viewpoint.transform.position = position;
+                if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
+                {
+                    GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
-                GenerateCriticalPoint(viewpoint);
-            }
+                    GenerateCriticalPoint(viewpoint);
+                }
 
-            if (bMesh)
-            {
-                GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                if (bMesh)
+                {
+                    GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                }
             }
         }
         
@@ -72,34 +75,35 @@ public class ViewPoint : MonoBehaviour
 
         if (!drawobstacle.bUserDefine)
         {
-            /*
-            viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
-
-            if (viewpoint)
+            if (!debug)
             {
-                viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
-                if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
-                {
-                    GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+                viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
-                    GenerateCriticalPoint(viewpoint);
-                    Destroy(viewpointPrefab, 0.02f);
-
-                    if (bMesh)
-                    {
-                        GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
-                    }
-                }
-                else
+                if (viewpoint)
                 {
-                    if (mesh)
+                    viewpoint.transform.position = new Vector2(GetMousePosition().x, GetMousePosition().y);
+                    if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
                     {
-                        mesh.Clear();
+                        GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
+
+                        GenerateCriticalPoint(viewpoint);
+                        Destroy(viewpointPrefab, 0.02f);
+
+                        if (bMesh)
+                        {
+                            GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                        }
                     }
+                    else
+                    {
+                        if (mesh)
+                        {
+                            mesh.Clear();
+                        }
+                    }
+                    position = viewpoint.transform.position;
                 }
-                position = viewpoint.transform.position;
             }
-            */
         }
         else
         {
@@ -170,8 +174,9 @@ public class ViewPoint : MonoBehaviour
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
-
-                    if (AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
+                    bool test1 = HelpFunction.IsDetectIntersect(new Ray2D(viewpoint.transform.position, direction), prev, next);
+                    if (!test1)
+                        // AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
                         addPointToCriticalList(rayCastHit2D.point);
                         continue;
@@ -190,7 +195,7 @@ public class ViewPoint : MonoBehaviour
                     break;
                 }
             }
-            if (!bMesh)
+            // if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
@@ -427,14 +432,17 @@ public class ViewPoint : MonoBehaviour
             Debug.Log("Something bad!!");
         }
 
-        foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
+        if (!debug)
         {
-            Destroy(criticalpointPrefab, 0.02f);
-        }
+            foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
+            {
+                Destroy(criticalpointPrefab, 0.02f);
+            }
 
-        foreach (LineRenderer lineRenderer in criticalpointsLineRenderers)
-        {
-            Destroy(lineRenderer, 0.03f);
+            foreach (LineRenderer lineRenderer in criticalpointsLineRenderers)
+            {
+                Destroy(lineRenderer, 0.03f);
+            }
         }
     }
 
