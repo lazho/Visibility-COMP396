@@ -249,8 +249,7 @@ public class ViewPoint : MonoBehaviour
                 Vector2 preNode = list[pre];
                 Vector2 nextNode = list[next];
                 bool test1 = isInSameObstaclesLine(list[cur], preNode);
-                bool test2 = isInSameObstaclesLine(list[end], nextNode);
-                if (!test1 && !test2)
+                if (!isInSameObstaclesLine(list[cur], preNode))
                 {
                     // swap the order
                     for (int i = 0; i <= (end - cur) / 2; i++)
@@ -314,23 +313,23 @@ public class ViewPoint : MonoBehaviour
             if (HelpFunction.Vector2Equal(o2 - p1, o2))
             {
                 // p1 = (0, 0)
-                return o2.magnitude > (p2 - o2).magnitude ? true : false;
+                return HelpFunction.floatGreat(o2.magnitude, (p2 - o2).magnitude) ? true : false;
             }
             else if (HelpFunction.Vector2Equal(o2 - p2, o2))
             {
                 // p2 = (0, 0)
-                return o2.magnitude > (p1 - o2).magnitude ? true : false;
+                return HelpFunction.floatGreat(o2.magnitude, (p1 - o2).magnitude) ? true : false;
             }
             else if (HelpFunction.Vector2Equal(p1.normalized, p2.normalized))
             {
                 // same line
-                if ((o2 - p1).magnitude > o2.magnitude || (o2 - p2).magnitude > o2.magnitude)
+                if (HelpFunction.floatGreat((o2 - p1).magnitude, o2.magnitude) || HelpFunction.floatGreat((o2 - p2).magnitude, o2.magnitude))
                 {
                     return false;
                 }
                 else
                 {
-                    return (o2.magnitude >= p1.magnitude && o2.magnitude >= p2.magnitude) ? true : false;
+                    return (!HelpFunction.floatLess(o2.magnitude, p1.magnitude) && !HelpFunction.floatLess(o2.magnitude, p2.magnitude)) ? true : false;
                 }
             }
         }

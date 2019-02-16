@@ -8,12 +8,12 @@ public class HelpFunction : MonoBehaviour
 {
     const double epsilon = 1e-2;
 
-    static bool floatLess(float value, float other)
+    public static bool floatLess(float value, float other)
     {
         return (other - value) > epsilon;
     }
 
-    static bool floatGreat(float value, float other)
+    public static bool floatGreat(float value, float other)
     {
         return (value - other) > epsilon;
     }
