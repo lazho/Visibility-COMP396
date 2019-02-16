@@ -174,9 +174,8 @@ public class ViewPoint : MonoBehaviour
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
-                    bool test1 = HelpFunction.IsDetectIntersect(new Ray2D(viewpoint.transform.position, direction), prev, next);
-                    if (!test1)
-                        // AreSameSide(endPoints[i] - viewpoint.transform.position, prev - viewpoint.transform.position, next - viewpoint.transform.position))
+                    if (AreSameSide( new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
+                        , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
                         addPointToCriticalList(rayCastHit2D.point);
                         continue;
@@ -195,7 +194,7 @@ public class ViewPoint : MonoBehaviour
                     break;
                 }
             }
-            // if (!bMesh)
+            if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }

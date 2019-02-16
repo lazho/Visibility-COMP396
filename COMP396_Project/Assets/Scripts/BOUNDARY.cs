@@ -25,7 +25,7 @@ public class BOUNDARY : MonoBehaviour
     void Start()
     {
         GenerateNewLine(BoundaryLine);
-        GenerateCollider(BoundaryLine);
+        GenerateColliders(BoundaryLine);
     }
 
     private void GenerateNewLine(Vector3[] linePoints)
@@ -49,15 +49,23 @@ public class BOUNDARY : MonoBehaviour
         lRend.SetPositions(linePoints);
     }
 
-    private void GenerateCollider(Vector3[] boundaryLine)
+    private void GenerateCollider(Vector2 v1, Vector2 v2)
     {
-        EdgeCollider2D edgeCollider = GetComponent<EdgeCollider2D>();
-        Vector2[] boundaryLine2D = new Vector2[boundaryLine.Length + 1];
+        EdgeCollider2D edgeCollider = gameObject.AddComponent<EdgeCollider2D>();
+        edgeCollider.points = new Vector2[]
+        {
+            v1,
+            v2
+        };
+
+    }
+
+    private void GenerateColliders(Vector3[] boundaryLine)
+    {
         for (int i = 0; i < boundaryLine.Length; i++)
         {
-            boundaryLine2D[i] = boundaryLine[i];
+            GenerateCollider(new Vector2(boundaryLine[i].x, boundaryLine[i].y)
+                , new Vector2(boundaryLine[(i + 1) % boundaryLine.Length].x, boundaryLine[(i + 1) % boundaryLine.Length].y));
         }
-        boundaryLine2D[boundaryLine.Length] = boundaryLine[0];
-        edgeCollider.points = boundaryLine2D;
     }
 }
