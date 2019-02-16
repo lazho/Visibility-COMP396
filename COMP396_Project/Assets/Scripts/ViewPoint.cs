@@ -12,11 +12,13 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private OBSTACLE.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
-    [SerializeField] private bool debug = false;
+    
 
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
+    [SerializeField] private bool debug = false;
+    [SerializeField] private Vector2[] criticalPointDebug;
 
     private float screenWidthInUnits = 32f;
     private float screenHeightInUnits = 18f;
@@ -41,6 +43,7 @@ public class ViewPoint : MonoBehaviour
         drawboundary = GameObject.Find("BoundaryManager").GetComponent<BOUNDARY>();
         drawobstacle = GameObject.Find("ObstacleManager").GetComponent<OBSTACLE>();
 
+
         // Generate the obstacles and boundry in advance
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
@@ -56,8 +59,18 @@ public class ViewPoint : MonoBehaviour
                 if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
                 {
                     GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
-
                     GenerateCriticalPoint(viewpoint);
+
+                    // TODO update critical point debug
+                    // criticalPointDebug = new Vector2[criticalPoints.Count];
+                    criticalPointDebug = criticalPoints.ToArray();
+                    
+                    /*
+                    for (int i = 0; i < criticalPoints.Count; i++)
+                    {
+                        criticalPointDebug[i] = criticalPoints
+                    }
+                    */
                 }
 
                 if (bMesh)
@@ -87,6 +100,9 @@ public class ViewPoint : MonoBehaviour
                         GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
                         GenerateCriticalPoint(viewpoint);
+                        criticalPointDebug = new Vector2[criticalPoints.Count];
+                        criticalPointDebug = criticalPoints.ToArray();
+
                         Destroy(viewpointPrefab, 0.02f);
 
                         if (bMesh)
