@@ -280,10 +280,6 @@ public class ViewPoint : MonoBehaviour
                     for (int i = 0; i <= (end - cur) / 2; i++)
                     {
                         swapOrder(list, cur, end);
-                        list[cur + i] = list[end - i];
-                        list[end - i] = temp;
-                    }
-                }
                     }
                 }
             }
@@ -380,7 +376,6 @@ public class ViewPoint : MonoBehaviour
         }
         return false;
     }
-    */
 
     private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
     {

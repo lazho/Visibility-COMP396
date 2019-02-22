@@ -424,7 +424,7 @@ PrefabInstance:
     - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
       propertyPath: BoundaryLine.Array.size
-      value: 8
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
@@ -469,27 +469,27 @@ PrefabInstance:
     - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
       propertyPath: BoundaryLine.Array.data[1].x
-      value: 13
-      objectReference: {fileID: 0}
-    - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
-        type: 3}
-      propertyPath: BoundaryLine.Array.data[1].y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
-        type: 3}
-      propertyPath: BoundaryLine.Array.data[2].x
       value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
+      propertyPath: BoundaryLine.Array.data[1].y
+      value: -8
+      objectReference: {fileID: 0}
+    - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
+        type: 3}
+      propertyPath: BoundaryLine.Array.data[2].x
+      value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
+        type: 3}
       propertyPath: BoundaryLine.Array.data[3].x
-      value: 0
+      value: -15
       objectReference: {fileID: 0}
     - target: {fileID: 712575460569030704, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
       propertyPath: BoundaryLine.Array.data[3].y
-      value: -6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2274616539001696001, guid: 950efc35c71d92b40bbbbe24bc350b83,
         type: 3}
