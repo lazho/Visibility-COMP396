@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +26,46 @@ public class HelpFunction : MonoBehaviour
     public static bool Vector2Equal(Vector2 a, Vector2 b)
     {
         return floatEqual(a.x, b.x) && floatEqual(a.y, b.y);
+    }
+
+    public static bool IsInsideSegement(Vector2 detectedPoint, Vector2 endPoint1, Vector2 endPoint2)
+    {
+        if (Vector2Equal(detectedPoint, endPoint1) || Vector2Equal(detectedPoint, endPoint2))
+        {
+            return true;
+        }
+
+        if ((!floatGreat(detectedPoint.x, endPoint1.x) && !floatLess(detectedPoint.x, endPoint2.x))
+            || (!floatGreat(detectedPoint.x, endPoint2.x) && !floatLess(detectedPoint.x, endPoint1.x)))
+        {
+            return Vector2Equal((detectedPoint - endPoint2).normalized, (endPoint1 - detectedPoint).normalized);
+        }
+        return false;
+    }
+
+    public static bool isInObstacle(Vector2 detectedPoint, Vector3[] obstaclePoints)
+    {
+        for (int i = 0; i < obstaclePoints.Length; i++)
+        {
+            if (IsInsideSegement(detectedPoint, obstaclePoints[i], obstaclePoints[(i + 1) % obstaclePoints.Length]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool isInSameLineOfObstacle(Vector2 detectedPoint1, Vector2 detectedPoint2, Vector3[] obstaclePoints)
+    {
+        for (int i = 0; i < obstaclePoints.Length; i++)
+        {
+            if (IsInsideSegement(detectedPoint1, obstaclePoints[i], obstaclePoints[(i + 1) % obstaclePoints.Length])
+                && IsInsideSegement(detectedPoint2, obstaclePoints[i], obstaclePoints[(i + 1) % obstaclePoints.Length]))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>
@@ -257,4 +297,6 @@ public class HelpFunction : MonoBehaviour
     {
         return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y) < 0 ? true : false;
     }
+
 }
+

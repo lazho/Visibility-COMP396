@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private OBSTACLE.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
-    
+
 
     // Test 
     // Whether use mesh to show the visibility effect or not
@@ -64,7 +64,7 @@ public class ViewPoint : MonoBehaviour
                     // TODO update critical point debug
                     // criticalPointDebug = new Vector2[criticalPoints.Count];
                     criticalPointDebug = criticalPoints.ToArray();
-                    
+
                     /*
                     for (int i = 0; i < criticalPoints.Count; i++)
                     {
@@ -79,7 +79,7 @@ public class ViewPoint : MonoBehaviour
                 }
             }
         }
-        
+
     }
 
     // Update is called once per frame
@@ -190,7 +190,7 @@ public class ViewPoint : MonoBehaviour
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                     Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
                     Vector3 next = endPoints[(i + 1) % endPoints.Length];
-                    if (AreSameSide( new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
+                    if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                         , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
                         addPointToCriticalList(rayCastHit2D.point);
@@ -244,13 +244,22 @@ public class ViewPoint : MonoBehaviour
     {
         list.Sort(compareByAngle);
 
-        int cur = 0;
+        int round = 1;
+        bool flag = false;
+
+        int cur = 1;
         // the index of previous node
-        int pre = list.Count - 1;
+        int pre = 0;
         // the index of next node
         int next = cur + 1;
-        while (cur < list.Count)
+        while (cur < list.Count + 1 && round < 3)
         {
+            if (cur == list.Count)
+            {
+                cur = 0;
+                round++;
+            }
+            
             int end = cur;
             while (end + 1 < list.Count && compareByAngle(list[end], list[end + 1]) == 0)
             {
@@ -260,7 +269,7 @@ public class ViewPoint : MonoBehaviour
             }
             // List with index from "cur" to "end" are all in the same line
 
-            if (end > cur)
+            if (end > cur && flag)
             {
                 Vector2 preNode = list[pre];
                 Vector2 nextNode = list[next];
@@ -270,19 +279,39 @@ public class ViewPoint : MonoBehaviour
                     // swap the order
                     for (int i = 0; i <= (end - cur) / 2; i++)
                     {
-                        Vector2 temp = list[cur + i];
+                        swapOrder(list, cur, end);
                         list[cur + i] = list[end - i];
                         list[end - i] = temp;
                     }
                 }
+                    }
+                }
+            }
+            else
+            {
+                flag = true;
             }
             cur = end + 1;
             pre = end;
             next = cur + 1;
             next %= list.Count;
         }
+
+
         return list;
     }
+
+    private static void swapOrder(List<Vector2> list, int cur, int end)
+    {
+        // swap the order
+        for (int i = 0; i <= (end - cur) / 2; i++)
+        {
+            Vector2 temp = list[cur + i];
+            list[cur + i] = list[end - i];
+            list[end - i] = temp;
+        }
+    }
+
     /**
      * Determine whether two points are on the same obstacle line
      */
@@ -351,6 +380,7 @@ public class ViewPoint : MonoBehaviour
         }
         return false;
     }
+    */
 
     private void GenerateMeshTriangle(GameObject viewpoint, List<Vector2> criticalPoints)
     {
@@ -474,5 +504,5 @@ public class ViewPoint : MonoBehaviour
         return vector1.x * vector2.y - vector1.y * vector2.x;
     }
 
-    
+
 }
