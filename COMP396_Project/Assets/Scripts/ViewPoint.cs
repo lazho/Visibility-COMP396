@@ -12,6 +12,9 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private OBSTACLE.Obstacle[] ObstaclesLine;
     [SerializeField] private GameObject lineGeneratorPrefab;
     [SerializeField] private GameObject MeshManager;
+    [SerializeField] private bool bPartiallyView = false;
+    [SerializeField] private Vector2 startDirection = new Vector2(1, 0);
+    [SerializeField] private Vector2 endDirection = new Vector2(1, 0);
 
 
     // Test 
@@ -140,9 +143,9 @@ public class ViewPoint : MonoBehaviour
         {
             foreach (OBSTACLE.Obstacle obstacleLine in ObstaclesLine)
             {
-                GenerateLineCast(viewpoint, obstacleLine.obstaclePoints);
+                GenerateLinesCast(viewpoint, obstacleLine.obstaclePoints);
             }
-            GenerateLineCast(viewpoint, BoundaryLine);
+            GenerateLinesCast(viewpoint, BoundaryLine);
         }
         else
         {
@@ -161,35 +164,57 @@ public class ViewPoint : MonoBehaviour
      * @param viewpoint   the oject of the view point
      * @param endPoints   the list of the end points that need to connected with the view point     
      */
-    private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints)
+    private void GenerateLinesCast(GameObject viewpoint, Vector3[] endPoints)
     {
         Vector2 hitPoint = new Vector2();
 
         for (int i = 0; i < endPoints.Length; i++)
         {
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
+            if (bPartiallyView)
+            {
+                if (HelpFunction.compareByAngle(direction, startDirection) > 0 && HelpFunction.compareByAngle(direction, endDirection) < 0)
+                {
+                    hitPoint = GenerateLineCast(viewpoint, endPoints, direction, i);
+                }
+            }
+            else
+            {
+                hitPoint = GenerateLineCast(viewpoint, endPoints, direction, i);
+            }
+        }
 
+        if (bPartiallyView)
+        {
+            GenerateLineCast(viewpoint, endPoints, startDirection);
+            GenerateLineCast(viewpoint, endPoints, endDirection);
+        }   
+    }
+
+    private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction, int endPointIndex)
+    {
+        Vector2 hitPoint = new Vector2();
             RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
-            if (!HelpFunction.Vector2Equal(endPoints[i], rayCastHits2D[0].point))
+            if (!HelpFunction.Vector2Equal(endPoints[endPointIndex], rayCastHits2D[0].point))
             {
                 if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude
-                > new Vector2(endPoints[i].x - viewpoint.transform.position.x, endPoints[i].y - viewpoint.transform.position.y).magnitude)
+                > new Vector2(endPoints[endPointIndex].x - viewpoint.transform.position.x, endPoints[endPointIndex].y - viewpoint.transform.position.y).magnitude)
                 {
                     // force to add the critical point
-                    addPointToCriticalList(endPoints[i]);
+                    addPointToCriticalList(endPoints[endPointIndex]);
                 }
             }
 
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
                 // if the hit result is the same position as obstacle position
-                if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[i]))
+                if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[endPointIndex]))
                 {
 
                     // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
-                    Vector3 prev = endPoints[(i + endPoints.Length - 1) % endPoints.Length];
-                    Vector3 next = endPoints[(i + 1) % endPoints.Length];
+                    Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
+                    Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
                     if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                         , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                     {
@@ -214,7 +239,27 @@ public class ViewPoint : MonoBehaviour
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
+        return hitPoint;
+    }
+
+    private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction)
+    {
+        Vector2 hitPoint = new Vector2();
+        RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        if (rayCastHits2D.Length > 0)
+        {
+            hitPoint = rayCastHits2D[0].point;
+            addPointToCriticalList(hitPoint);
+            if (!bMesh)
+            {
+                GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
+            }
         }
+        else
+        {
+            Debug.Log("Generate Line cast Wrong");
+        }
+        return hitPoint;
     }
 
     private void addPointToCriticalList(Vector3 point)
@@ -400,22 +445,30 @@ public class ViewPoint : MonoBehaviour
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
 
-
-        mesh.Clear();
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-
     }
 
     private void GenerateTrianglePositionOrder(int length, out int[] triangles)
     {
-        triangles = new int[length * 3];
-        for (int i = 0; i < length; i++)
+        
+        if (!bPartiallyView)
         {
-            triangles[3 * i] = i;
-            triangles[3 * i + 1] = (i + 1) % length;
-            triangles[3 * i + 2] = length;
+            triangles = new int[length * 3];
+            for (int i = 0; i < length; i++)
+            {
+                triangles[3 * i] = i;
+                triangles[3 * i + 1] = (i + 1) % length;
+                triangles[3 * i + 2] = length;
+            }
+        }
+        else
+        {
+            triangles = new int[(length - 1) * 3];
+            for (int i = 0; i < length - 1 ; i++)
+            {
+                triangles[3 * i] = i;
+                triangles[3 * i + 1] = i + 1;
+                triangles[3 * i + 2] = length;
+            }
         }
     }
 
@@ -425,16 +478,25 @@ public class ViewPoint : MonoBehaviour
     {
         v1 = new Vector2(v1.x - viewpoint.transform.position.x, v1.y - viewpoint.transform.position.y);
         v2 = new Vector2(v2.x - viewpoint.transform.position.x, v2.y - viewpoint.transform.position.y);
+        float angle1;
+        float angle2;
+        if (!bPartiallyView)
+        {
+            angle1 = Vector2.Angle(v1, new Vector2(1, 0));
+            angle2 = Vector2.Angle(v2, new Vector2(1, 0));
+        }
+        else
+        {
+            angle1 = Vector2.Angle(v1, startDirection);
+            angle2 = Vector2.Angle(v2, startDirection);
+        }
 
-        float angle1 = Vector2.Angle(v1, new Vector2(1, 0));
-        float angle2 = Vector2.Angle(v2, new Vector2(1, 0));
-
-        if (v1.y > 0)
+        if (v1.y > 0 && !HelpFunction.floatEqual(angle1, 0))
         {
             angle1 = 360 - angle1;
         }
 
-        if (v2.y > 0)
+        if (v2.y > 0 && !HelpFunction.floatEqual(angle2, 0))
         {
             angle2 = 360 - angle2;
         }

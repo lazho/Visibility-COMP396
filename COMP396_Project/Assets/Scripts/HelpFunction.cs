@@ -298,5 +298,39 @@ public class HelpFunction : MonoBehaviour
         return (a.x - c.x) * (b.y - c.y) - (b.x - c.x) * (a.y - c.y) < 0 ? true : false;
     }
 
+    /// <summary>
+    /// compare two vector 
+    /// </summary>
+    /// <param name="v1">vector1</param>
+    /// <param name="v2">vector2</param>
+    /// <returns>0 -> v1 == v2; -1 -> v1 < v2; 1 -> v1 > v2</returns>
+    public static int compareByAngle(Vector2 v1, Vector2 v2)
+    {
+        v1 = new Vector2(v1.x, v1.y);
+        v2 = new Vector2(v2.x, v2.y);
+
+        float angle1 = Vector2.Angle(v1, new Vector2(1, 0));
+        float angle2 = Vector2.Angle(v2, new Vector2(1, 0));
+
+        if (v1.y > 0)
+        {
+            angle1 = 360 - angle1;
+        }
+
+        if (v2.y > 0)
+        {
+            angle2 = 360 - angle2;
+        }
+
+        if (HelpFunction.floatEqual(angle1, angle2))
+        {
+            return 0;
+        }
+        else
+        {
+            return angle1 > angle2 ? 1 : -1;
+        }
+    }
+
 }
 
