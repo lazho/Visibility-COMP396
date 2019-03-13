@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class HelpFunction : MonoBehaviour
 {
-    const double epsilon = 5e-2;
+    const double epsilon = 1e-3;
 
     public static bool floatLess(float value, float other)
     {

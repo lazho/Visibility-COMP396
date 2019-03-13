@@ -302,7 +302,7 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: endDirection.x
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
@@ -312,12 +312,12 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.x
-      value: 11
+      value: 2.5917
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.y
-      value: -5
+      value: -0.171
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}

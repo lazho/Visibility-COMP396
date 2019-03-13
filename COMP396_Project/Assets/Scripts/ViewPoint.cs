@@ -66,7 +66,7 @@ public class ViewPoint : MonoBehaviour
 
                     // TODO update critical point debug
                     // criticalPointDebug = new Vector2[criticalPoints.Count];
-                    criticalPointDebug = criticalPoints.ToArray();
+                    
 
                     /*
                     for (int i = 0; i < criticalPoints.Count; i++)
@@ -103,8 +103,6 @@ public class ViewPoint : MonoBehaviour
                         GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
 
                         GenerateCriticalPoint(viewpoint);
-                        criticalPointDebug = new Vector2[criticalPoints.Count];
-                        criticalPointDebug = criticalPoints.ToArray();
 
                         Destroy(viewpointPrefab, 0.02f);
 
@@ -194,8 +192,9 @@ public class ViewPoint : MonoBehaviour
     private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction, int endPointIndex)
     {
         Vector2 hitPoint = new Vector2();
-            RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
-
+        RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        if (rayCastHits2D.Length > 0)
+        {
             if (!HelpFunction.Vector2Equal(endPoints[endPointIndex], rayCastHits2D[0].point))
             {
                 if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude
@@ -239,6 +238,11 @@ public class ViewPoint : MonoBehaviour
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
+        }
+        else
+        {
+            Debug.Log("No hitpoint");
+        }
         return hitPoint;
     }
 
@@ -288,15 +292,16 @@ public class ViewPoint : MonoBehaviour
     private List<Vector2> sortCriticalPointClockWise(List<Vector2> list)
     {
         list.Sort(compareByAngle);
+        criticalPointDebug = list.ToArray();
 
         int round = 1;
         bool flag = false;
 
-        int cur = 1;
+        int cur = 0;
         // the index of previous node
-        int pre = 0;
+        int pre = list.Count - 1;
         // the index of next node
-        int next = cur + 1;
+        int next = 1;
         while (cur < list.Count + 1 && round < 3)
         {
             if (cur == list.Count)
@@ -322,10 +327,7 @@ public class ViewPoint : MonoBehaviour
                 if (!isInSameObstaclesLine(list[cur], preNode))
                 {
                     // swap the order
-                    for (int i = 0; i <= (end - cur) / 2; i++)
-                    {
-                        swapOrder(list, cur, end);
-                    }
+                    swapOrder(list, cur , end);
                 }
             }
             else
@@ -490,6 +492,16 @@ public class ViewPoint : MonoBehaviour
             angle1 = HelpFunction.clockwiseAngle(startDirection, v1);
             angle2 = HelpFunction.clockwiseAngle(startDirection, v2);
         }
+        if (HelpFunction.floatEqual(angle1, 0f))
+        {
+            return HelpFunction.floatEqual(angle2, 0f) ? 0 : -1;
+        }
+
+        if (HelpFunction.floatEqual(angle2, 0f))
+        {
+            return HelpFunction.floatEqual(angle1, 0f) ? 0 : 1;
+        }
+
         if (HelpFunction.floatEqual(angle1, angle2))
         {
             return 0;
