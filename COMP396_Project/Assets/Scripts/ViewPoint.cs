@@ -173,7 +173,7 @@ public class ViewPoint : MonoBehaviour
             Vector2 direction = endPoints[i] - viewpoint.transform.position;
             if (bPartiallyView)
             {
-                if (HelpFunction.compareByAngle(direction, startDirection) > 0 && HelpFunction.compareByAngle(direction, endDirection) < 0)
+                if (HelpFunction.isInsideClockRangeOfTwoVector(startDirection, endDirection, direction))
                 {
                     hitPoint = GenerateLineCast(viewpoint, endPoints, direction, i);
                 }
@@ -482,25 +482,14 @@ public class ViewPoint : MonoBehaviour
         float angle2;
         if (!bPartiallyView)
         {
-            angle1 = Vector2.Angle(v1, new Vector2(1, 0));
-            angle2 = Vector2.Angle(v2, new Vector2(1, 0));
+            angle1 = HelpFunction.clockwiseAngle(new Vector2(1, 0), v1);
+            angle2 = HelpFunction.clockwiseAngle(new Vector2(1, 0), v2);
         }
         else
         {
-            angle1 = Vector2.Angle(v1, startDirection);
-            angle2 = Vector2.Angle(v2, startDirection);
+            angle1 = HelpFunction.clockwiseAngle(startDirection, v1);
+            angle2 = HelpFunction.clockwiseAngle(startDirection, v2);
         }
-
-        if (v1.y > 0 && !HelpFunction.floatEqual(angle1, 0))
-        {
-            angle1 = 360 - angle1;
-        }
-
-        if (v2.y > 0 && !HelpFunction.floatEqual(angle2, 0))
-        {
-            angle2 = 360 - angle2;
-        }
-
         if (HelpFunction.floatEqual(angle1, angle2))
         {
             return 0;

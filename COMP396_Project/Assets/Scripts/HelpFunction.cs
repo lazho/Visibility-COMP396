@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class HelpFunction : MonoBehaviour
 {
-    const double epsilon = 1e-2;
+    const double epsilon = 5e-2;
 
     public static bool floatLess(float value, float other)
     {
@@ -330,6 +330,64 @@ public class HelpFunction : MonoBehaviour
         {
             return angle1 > angle2 ? 1 : -1;
         }
+    }
+
+    // clockwise
+    public static bool isInsideClockRangeOfTwoVector(Vector2 start, Vector2 end, Vector2 test)
+    {
+        
+        return !floatGreat(start.x * test.y - start.y * test.x, 0f) 
+            && !floatGreat(test.x * end.y - test.y * end.x, 0f);
+        /*
+        if (start.y < 0)
+        {
+            return compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
+        }
+        else
+        {
+            if (end.y > 0)
+            {
+                if (compareByAngle(start, end) < 0)
+                {
+                    bool test1 = compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
+                    return compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
+                }
+                else
+                {
+                    bool test1 = !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
+                    return !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0); 
+                }
+            }
+            else
+            {
+                bool test1 = !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
+                return !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
+            }
+        }
+        */
+    }
+
+    public static float clockwiseAngle(Vector2 from, Vector2 to)
+    {
+        if (Vector2Equal(from.normalized, to.normalized))
+        {
+            return 0f;
+        }
+        return from.x * to.y - from.y * to.x > 0 ? 360 - Vector2.Angle(from, to) : Vector2.Angle(from, to);
+    }
+
+    private void Start()
+    {
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(15, 8)));
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(-15, 8)));
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(15, -8)));
+
+        /*
+        Debug.Log(clockwiseAngle(new Vector2(1, 1), new Vector2(-1, 1)) + "expected: 270");
+        Debug.Log(clockwiseAngle(new Vector2(1, 0), new Vector2(1, -1)) + "expected: 45" );
+        Debug.Log(clockwiseAngle(new Vector2(1, 0), new Vector2(1, 1)) + "expected: 315 ");
+        Debug.Log(clockwiseAngle(new Vector2(1, 0.3f), new Vector2(1, 0.3f)) + "expected: 0");
+        */
     }
 
 }
