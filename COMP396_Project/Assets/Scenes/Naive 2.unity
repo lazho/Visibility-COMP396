@@ -280,17 +280,32 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: debug
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.y
-      value: -1.114
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.x
-      value: -1.606
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
+        type: 3}
+      propertyPath: bPartiallyView
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
+        type: 3}
+      propertyPath: endDirection.x
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
+        type: 3}
+      propertyPath: endDirection.y
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1151759072, guid: d537a56f61fc4ac40ad60c80b48a5ae6, type: 3}

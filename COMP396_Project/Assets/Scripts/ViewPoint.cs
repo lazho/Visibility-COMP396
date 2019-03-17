@@ -15,6 +15,7 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private bool bPartiallyView = false;
     [SerializeField] private Vector2 startDirection = new Vector2(1, 0);
     [SerializeField] private Vector2 endDirection = new Vector2(1, 0);
+    [SerializeField] private int range = 0;
 
 
     // Test 
@@ -79,10 +80,43 @@ public class ViewPoint : MonoBehaviour
                 if (bMesh)
                 {
                     GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                    GenerateRangeCircle(viewpoint, range);
                 }
             }
         }
 
+    }
+
+    private void GenerateRangeCircle(GameObject viewpoint, int range)
+    {
+        GameObject newLineGen = Instantiate(lineGeneratorPrefab);
+        LineRenderer circleRenderer = newLineGen.GetComponent<LineRenderer>();
+        if (circleRenderer)
+        {
+            float lineWidth = 0.03f;
+            int vertexCount = 100;
+            circleRenderer.widthMultiplier = lineWidth;
+
+            float deltaTheta = (2f * Mathf.PI) / vertexCount;
+            float theta = 0f;
+
+            circleRenderer.positionCount = vertexCount;
+            for (int i = 0; i < vertexCount; i++)
+            {
+                Vector2 pos = new Vector2(range * Mathf.Cos(theta) + viewpoint.transform.position.x, range * Mathf.Sin(theta) + viewpoint.transform.position.y);
+                circleRenderer.SetPosition(i, pos);
+                theta += deltaTheta;
+            }
+
+            if (!debug)
+            {
+                Destroy(circleRenderer, 0.03f);
+            }
+        }
+        else
+        {
+            Debug.Log("No Component");
+        }
     }
 
     // Update is called once per frame
@@ -109,6 +143,7 @@ public class ViewPoint : MonoBehaviour
                         if (bMesh)
                         {
                             GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
+                            GenerateRangeCircle(viewpoint, range);
                         }
                     }
                     else
@@ -192,7 +227,16 @@ public class ViewPoint : MonoBehaviour
     private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction, int endPointIndex)
     {
         Vector2 hitPoint = new Vector2();
-        RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        RaycastHit2D[] rayCastHits2D;
+        if (range <= 0)
+        {
+            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        }
+        else
+        {
+            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
+        }
+
         if (rayCastHits2D.Length > 0)
         {
             if (!HelpFunction.Vector2Equal(endPoints[endPointIndex], rayCastHits2D[0].point))
@@ -241,6 +285,7 @@ public class ViewPoint : MonoBehaviour
         }
         else
         {
+            addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
             Debug.Log("No hitpoint");
         }
         return hitPoint;
@@ -249,7 +294,15 @@ public class ViewPoint : MonoBehaviour
     private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction)
     {
         Vector2 hitPoint = new Vector2();
-        RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        RaycastHit2D[] rayCastHits2D;
+        if (range <= 0)
+        {
+            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
+        }
+        else
+        {
+            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
+        }
         if (rayCastHits2D.Length > 0)
         {
             hitPoint = rayCastHits2D[0].point;
@@ -261,7 +314,7 @@ public class ViewPoint : MonoBehaviour
         }
         else
         {
-            Debug.Log("Generate Line cast Wrong");
+            addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
         }
         return hitPoint;
     }

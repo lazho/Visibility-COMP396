@@ -335,9 +335,26 @@ public class HelpFunction : MonoBehaviour
     // clockwise
     public static bool isInsideClockRangeOfTwoVector(Vector2 start, Vector2 end, Vector2 test)
     {
-        
-        return !floatGreat(start.x * test.y - start.y * test.x, 0f) 
-            && !floatGreat(test.x * end.y - test.y * end.x, 0f);
+        float angle1 = Vector2.Angle(start, test);
+        if (floatGreat(start.x * test.y - start.y * test.x, 0f))
+        {
+            angle1 = 360 - angle1;
+        }
+
+        float angle2 = Vector2.Angle(test, end);
+        if (floatGreat(test.x * end.y - test.y * end.x, 0f))
+        {
+            angle2 = 360 - angle2;
+        }
+
+        float angle3 = Vector2.Angle(start, end);
+        if (floatGreat(start.x * end.y - start.y * end.x, 0f))
+        {
+            angle3 = 360 - angle3;
+        }
+
+        return floatEqual(angle1 + angle2, angle3);
+            
         /*
         if (start.y < 0)
         {
@@ -378,9 +395,9 @@ public class HelpFunction : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(15, 8)));
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(-15, 8)));
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 0), new Vector2(15, -8)));
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, 8)));
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(-15, 8)));
+        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, -8)));
 
         /*
         Debug.Log(clockwiseAngle(new Vector2(1, 1), new Vector2(-1, 1)) + "expected: 270");

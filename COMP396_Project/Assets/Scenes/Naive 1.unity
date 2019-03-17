@@ -290,7 +290,7 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: debug
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
@@ -305,22 +305,27 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: bPartiallyView
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: endDirection.x
-      value: -1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: endDirection.y
-      value: -2
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: startDirection.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
+        type: 3}
+      propertyPath: range
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1151759072, guid: d537a56f61fc4ac40ad60c80b48a5ae6, type: 3}
