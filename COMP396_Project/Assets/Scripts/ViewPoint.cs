@@ -266,7 +266,10 @@ public class ViewPoint : MonoBehaviour
                             , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                         {
                             addPointToCriticalList(rayCastHit2D.point);
-                            GenerateVisibilityEffectWithLine(viewpoint, rayCastHit2D.point);
+                            if (!bMesh)
+                            {
+                                GenerateVisibilityEffectWithLine(viewpoint, rayCastHit2D.point);
+                            }
                             continue;
                         }
                         else
