@@ -261,10 +261,12 @@ public class ViewPoint : MonoBehaviour
                         // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                         Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
                         Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
+                        
                         if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                             , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                         {
                             addPointToCriticalList(rayCastHit2D.point);
+                            GenerateVisibilityEffectWithLine(viewpoint, rayCastHit2D.point);
                             continue;
                         }
                         else
@@ -377,8 +379,16 @@ public class ViewPoint : MonoBehaviour
             {
                 Vector2 preNode = list[pre];
                 Vector2 nextNode = list[next];
-                bool test1 = isInSameObstaclesLine(list[cur], preNode);
-                if (!isInSameObstaclesLine(list[cur], preNode))
+                bool test;
+                if (cur == 0)
+                {
+                    test = isInSameObstaclesLine(list[end], nextNode);
+                }
+                else
+                {
+                    test = isInSameObstaclesLine(list[cur], preNode);
+                }
+                if (!test)
                 {
                     // swap the order
                     swapOrder(list, cur , end);
