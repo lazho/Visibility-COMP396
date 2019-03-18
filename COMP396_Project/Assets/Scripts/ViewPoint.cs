@@ -52,7 +52,10 @@ public class ViewPoint : MonoBehaviour
         BoundaryLine = drawboundary.GetBoundaryLine();
         ObstaclesLine = drawobstacle.GetObstacles();
 
-
+        if (range <= 0)
+        {
+            range = int.MaxValue;
+        }
         if (debug)
         {
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
@@ -228,14 +231,7 @@ public class ViewPoint : MonoBehaviour
     {
         Vector2 hitPoint = new Vector2();
         RaycastHit2D[] rayCastHits2D;
-        if (range <= 0)
-        {
-            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
-        }
-        else
-        {
-            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
-        }
+        rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
         if (rayCastHits2D.Length > 0)
         {
@@ -245,24 +241,38 @@ public class ViewPoint : MonoBehaviour
                 > new Vector2(endPoints[endPointIndex].x - viewpoint.transform.position.x, endPoints[endPointIndex].y - viewpoint.transform.position.y).magnitude)
                 {
                     // force to add the critical point
-                    addPointToCriticalList(endPoints[endPointIndex]);
+                    if ((endPoints[endPointIndex] - viewpoint.transform.position).magnitude < range)
+                    {
+                        addPointToCriticalList(endPoints[endPointIndex]);
+                    }
                 }
             }
 
             foreach (RaycastHit2D rayCastHit2D in rayCastHits2D)
             {
-                // if the hit result is the same position as obstacle position
-                if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[endPointIndex]))
+                Vector2 temp = new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x
+                    , rayCastHit2D.point.y - viewpoint.transform.position.y);
+                if (temp.magnitude < range)
                 {
-
-                    // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
-                    Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
-                    Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
-                    if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
-                        , prev - viewpoint.transform.position, next - viewpoint.transform.position))
+                    // if the hit result is the same position as obstacle position
+                    if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[endPointIndex]))
                     {
-                        addPointToCriticalList(rayCastHit2D.point);
-                        continue;
+
+                        // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
+                        Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
+                        Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
+                        if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
+                            , prev - viewpoint.transform.position, next - viewpoint.transform.position))
+                        {
+                            addPointToCriticalList(rayCastHit2D.point);
+                            continue;
+                        }
+                        else
+                        {
+                            addPointToCriticalList(rayCastHit2D.point);
+                            hitPoint = rayCastHit2D.point;
+                            break;
+                        }
                     }
                     else
                     {
@@ -273,8 +283,8 @@ public class ViewPoint : MonoBehaviour
                 }
                 else
                 {
-                    addPointToCriticalList(rayCastHit2D.point);
-                    hitPoint = rayCastHit2D.point;
+                    // hitpoint out of range
+                    addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
                     break;
                 }
             }
@@ -283,11 +293,6 @@ public class ViewPoint : MonoBehaviour
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
         }
-        else
-        {
-            addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
-            Debug.Log("No hitpoint");
-        }
         return hitPoint;
     }
 
@@ -295,26 +300,22 @@ public class ViewPoint : MonoBehaviour
     {
         Vector2 hitPoint = new Vector2();
         RaycastHit2D[] rayCastHits2D;
-        if (range <= 0)
-        {
-            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
-        }
-        else
-        {
-            rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
-        }
+        rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
         if (rayCastHits2D.Length > 0)
         {
             hitPoint = rayCastHits2D[0].point;
-            addPointToCriticalList(hitPoint);
+            if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude < range)
+            {
+                addPointToCriticalList(hitPoint);
+            }
+            else
+            {
+                addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
+            }
             if (!bMesh)
             {
                 GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
             }
-        }
-        else
-        {
-            addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
         }
         return hitPoint;
     }
