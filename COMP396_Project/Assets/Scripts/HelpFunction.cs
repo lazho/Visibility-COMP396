@@ -393,11 +393,74 @@ public class HelpFunction : MonoBehaviour
         return from.x * to.y - from.y * to.x > 0 ? 360 - Vector2.Angle(from, to) : Vector2.Angle(from, to);
     }
 
+    // Find the points of intersection.
+    public static int FindLineCircleIntersections( Vector2 center, float radius, Vector2 point1, Vector2 point2,
+        out Vector2 intersection1, out Vector2 intersection2)
+    { 
+        float dx, dy, A, B, C, det, t;
+
+        dx = point2.x - point1.x;
+        dy = point2.y - point1.y;
+
+        A = dx * dx + dy * dy;
+        B = 2 * (dx * (point1.x - center.x) + dy * (point1.y - center.y));
+        C = (point1.x - center.x) * (point1.x - center.x) +
+            (point1.y - center.y) * (point1.y - center.y) -
+            radius * radius;
+
+        det = B * B - 4 * A * C;
+        if (floatLess(A, 0f) || floatLess(det, 0f))
+        {
+            // No real solutions.
+            intersection1 = new Vector2(float.NaN, float.NaN);
+            intersection2 = new Vector2(float.NaN, float.NaN);
+            return 0;
+        }
+        else if (floatEqual(det, 0f))
+        {
+            // One solution.
+            t = -B / (2 * A);
+            intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+            intersection2 = new Vector2(float.NaN, float.NaN);
+            if (IsInsideSegement(intersection1, point1, point2))
+            {
+                return 1;
+            }
+            else
+            {
+                intersection1 = new Vector2(float.NaN, float.NaN);
+                return 0;
+            }
+            
+            
+        }
+        else
+        {
+            // Two solutions.
+            t = (float)((-B + Math.Sqrt(det)) / (2 * A));
+            intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+            t = (float)((-B - Math.Sqrt(det)) / (2 * A));
+            intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+            int result = 2;
+            if (!IsInsideSegement(intersection1, point1, point2))
+            {
+                intersection1 = new Vector2(float.NaN, float.NaN);
+                result--;
+            }
+            if (!IsInsideSegement(intersection2, point1, point2))
+            {
+                intersection2 = new Vector2(float.NaN, float.NaN);
+                result--;
+            }
+            return result;
+        }
+    }
+
     private void Start()
     {
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, 8)));
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(-15, 8)));
-        Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, -8)));
+        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, 8)));
+        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(-15, 8)));
+        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, -8)));
 
         /*
         Debug.Log(clockwiseAngle(new Vector2(1, 1), new Vector2(-1, 1)) + "expected: 270");
@@ -405,6 +468,17 @@ public class HelpFunction : MonoBehaviour
         Debug.Log(clockwiseAngle(new Vector2(1, 0), new Vector2(1, 1)) + "expected: 315 ");
         Debug.Log(clockwiseAngle(new Vector2(1, 0.3f), new Vector2(1, 0.3f)) + "expected: 0");
         */
+        Vector2 result1;
+        Vector2 result2;
+        Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(5, 3), new Vector2(6, 3), out result1, out result2));
+        Debug.Log(result1 + "" + result2);
+        Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(1, 0), new Vector2(2, 0), out result1, out result2));
+        Debug.Log(result1 + "" + result2);
+        Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(6, -1), new Vector2(-1, 6), out result1, out result2));
+        Debug.Log(result1 + "" + result2);
+        Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(5, 0), new Vector2(5, 1), out result1, out result2));
+        Debug.Log(result1 + "" + result2);
+        Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(6, 0), new Vector2(6, 1), out result1, out result2));
     }
 
 }

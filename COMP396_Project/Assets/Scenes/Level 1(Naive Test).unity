@@ -297,7 +297,7 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: bPartiallyView
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
@@ -307,7 +307,7 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: endDirection.y
-      value: -1
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
@@ -332,7 +332,7 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: range
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8309482804020706149, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}

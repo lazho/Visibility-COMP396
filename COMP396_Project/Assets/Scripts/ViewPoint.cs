@@ -225,6 +225,40 @@ public class ViewPoint : MonoBehaviour
             GenerateLineCast(viewpoint, endPoints, startDirection);
             GenerateLineCast(viewpoint, endPoints, endDirection);
         }   
+
+        if (range > 0)
+        {
+            // compute the intersection point with the obstacle
+            for (int i = 0; i < endPoints.Length; i++)
+            {
+                Vector2 intersection1;
+                Vector2 intersection2;
+                if (HelpFunction.FindLineCircleIntersections(viewpoint.transform.position, range, endPoints[i], endPoints[(i + 1) % endPoints.Length], out intersection1, out intersection2) != 0)
+                {
+                    GenerateRangeIntersectionPoint(intersection1);
+                    GenerateRangeIntersectionPoint(intersection2);
+                }
+            }
+        }
+    }
+
+    private void GenerateRangeIntersectionPoint(Vector2 intersection)
+    {
+        if (Double.IsNaN(intersection.x) || Double.IsNaN(intersection.y))
+        {
+            return;
+        }
+        Vector2 direction = intersection - (Vector2)viewpoint.transform.position;
+        RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
+        if (rayCastHits2D.Length == 0)
+        {
+            addPointToCriticalList(intersection);
+        }
+
+        if (rayCastHits2D.Length == 1 && HelpFunction.Vector2Equal(rayCastHits2D[0].point, intersection))
+        {
+            addPointToCriticalList(intersection);
+        }
     }
 
     private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction, int endPointIndex)
