@@ -37,6 +37,7 @@ public class ViewPoint : MonoBehaviour
 
     LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
     GameObject viewpoint;
+    bool rangeEffect = true;
 
     //Debug
     [SerializeField] private Vector2 position;
@@ -54,6 +55,7 @@ public class ViewPoint : MonoBehaviour
 
         if (range <= 0)
         {
+            rangeEffect = false;
             range = int.MaxValue;
         }
         if (debug)
@@ -70,7 +72,7 @@ public class ViewPoint : MonoBehaviour
 
                     // TODO update critical point debug
                     // criticalPointDebug = new Vector2[criticalPoints.Count];
-                    
+
 
                     /*
                     for (int i = 0; i < criticalPoints.Count; i++)
@@ -83,7 +85,10 @@ public class ViewPoint : MonoBehaviour
                 if (bMesh)
                 {
                     GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
-                    GenerateRangeCircle(viewpoint, range);
+                    if (rangeEffect)
+                    {
+                        GenerateRangeCircle(viewpoint, range);
+                    }
                 }
             }
         }
@@ -146,7 +151,10 @@ public class ViewPoint : MonoBehaviour
                         if (bMesh)
                         {
                             GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
-                            GenerateRangeCircle(viewpoint, range);
+                            if (rangeEffect)
+                            {
+                                GenerateRangeCircle(viewpoint, range);
+                            }
                         }
                     }
                     else
@@ -224,9 +232,9 @@ public class ViewPoint : MonoBehaviour
         {
             GenerateLineCast(viewpoint, endPoints, startDirection);
             GenerateLineCast(viewpoint, endPoints, endDirection);
-        }   
+        }
 
-        if (range > 0)
+        if (rangeEffect)
         {
             // compute the intersection point with the obstacle
             for (int i = 0; i < endPoints.Length; i++)
@@ -295,7 +303,7 @@ public class ViewPoint : MonoBehaviour
                         // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                         Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
                         Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
-                        
+
                         if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                             , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                         {
@@ -386,59 +394,63 @@ public class ViewPoint : MonoBehaviour
     {
         list.Sort(compareByAngle);
         criticalPointDebug = list.ToArray();
-
-        int round = 1;
-        bool flag = false;
-
-        int cur = 0;
-        // the index of previous node
-        int pre = list.Count - 1;
-        // the index of next node
-        int next = 1;
-        while (cur < list.Count + 1 && round < 3)
+        Debug.Log("Range" + range);
+        if (!rangeEffect)
         {
-            if (cur == list.Count)
-            {
-                cur = 0;
-                round++;
-            }
-            
-            int end = cur;
-            while (end + 1 < list.Count && compareByAngle(list[end], list[end + 1]) == 0)
-            {
-                end++;
-                next++;
-                next %= list.Count;
-            }
-            // List with index from "cur" to "end" are all in the same line
+            Debug.Log("Rearrange the point order");
+            int round = 1;
+            bool flag = false;
 
-            if (end > cur && flag)
+            int cur = 0;
+            // the index of previous node
+            int pre = list.Count - 1;
+            // the index of next node
+            int next = 1;
+            while (cur < list.Count + 1 && round < 3)
             {
-                Vector2 preNode = list[pre];
-                Vector2 nextNode = list[next];
-                bool test;
-                if (cur == 0)
+                if (cur == list.Count)
                 {
-                    test = isInSameObstaclesLine(list[end], nextNode);
+                    cur = 0;
+                    round++;
+                }
+
+                int end = cur;
+                while (end + 1 < list.Count && compareByAngle(list[end], list[end + 1]) == 0)
+                {
+                    end++;
+                    next++;
+                    next %= list.Count;
+                }
+                // List with index from "cur" to "end" are all in the same line
+
+                if (end > cur && flag)
+                {
+                    Vector2 preNode = list[pre];
+                    Vector2 nextNode = list[next];
+                    bool test;
+                    if (cur == 0)
+                    {
+                        test = isInSameObstaclesLine(list[end], nextNode);
+                    }
+                    else
+                    {
+                        test = isInSameObstaclesLine(list[cur], preNode);
+                    }
+                    if (!test)
+                    {
+                        // swap the order
+                        swapOrder(list, cur, end);
+                    }
                 }
                 else
                 {
-                    test = isInSameObstaclesLine(list[cur], preNode);
+                    flag = true;
                 }
-                if (!test)
-                {
-                    // swap the order
-                    swapOrder(list, cur , end);
-                }
+                cur = end + 1;
+                pre = end;
+                next = cur + 1;
+                next %= list.Count;
             }
-            else
-            {
-                flag = true;
-            }
-            cur = end + 1;
-            pre = end;
-            next = cur + 1;
-            next %= list.Count;
         }
 
 
@@ -552,7 +564,7 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateTrianglePositionOrder(int length, out int[] triangles)
     {
-        
+
         if (!bPartiallyView)
         {
             triangles = new int[length * 3];
@@ -566,7 +578,7 @@ public class ViewPoint : MonoBehaviour
         else
         {
             triangles = new int[(length - 1) * 3];
-            for (int i = 0; i < length - 1 ; i++)
+            for (int i = 0; i < length - 1; i++)
             {
                 triangles[3 * i] = i;
                 triangles[3 * i + 1] = i + 1;
