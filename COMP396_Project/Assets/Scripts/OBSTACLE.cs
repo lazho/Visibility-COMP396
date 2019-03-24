@@ -36,9 +36,9 @@ public class OBSTACLE : MonoBehaviour
     {
         if (!bUserDefine)
         {
-            GenerateIndex();
             GenerateObstacles(obstacles);
             GenerateCollider(obstacles);
+            GenerateIndex();
         }
     }
 
@@ -96,6 +96,16 @@ public class OBSTACLE : MonoBehaviour
 
     private void GenerateObstacle(Obstacle obstacle)
     {
+        // triangulation
+        List<Obstacle> trianglizedObstacles = new List<Obstacle>();
+        trianglizedObstacles = HelpFunction.triangularization(obstacle);
+
+        //List<Obstacle> tempObstacle = new List<Obstacle>();
+        //tempObstacle = obstacles.ToList();
+        //tempObstacle.Remove(obstacle);
+        //tempObstacle.AddRange(trianglizedObstacles);
+        //obstacles = tempObstacle.ToArray();
+
         GenerateNewLine(obstacle.obstaclePoints);
     }
 

@@ -394,6 +394,7 @@ public class ViewPoint : MonoBehaviour
         }
         if (!isContain)
         {
+            if (bPartiallyView && !HelpFunction.isInsideClockRangeOfTwoVector(startDirection, endDirection, point.location - (Vector2)viewpoint.transform.position)) { return; }
             criticalPoints.AddFirst(point);
         }
     }
@@ -468,7 +469,10 @@ public class ViewPoint : MonoBehaviour
                 cur = end + 1;
                 pre = end;
                 next = cur + 1;
-                next %= list.Count;
+                if (next >= list.Count)
+                {
+                    next -= list.Count;
+                }
             }
         }
         else
@@ -509,6 +513,11 @@ public class ViewPoint : MonoBehaviour
                             // swap the order
                             swapOrder(list, cur, end);
                         }
+                        else if (nextNode.obstacleIndex == curNode.obstacleIndex)
+                        {
+                            // swap the order
+                            swapOrder(list, cur, end);
+                        }
                     }
 
 
@@ -535,7 +544,10 @@ public class ViewPoint : MonoBehaviour
                 cur = end + 1;
                 pre = end;
                 next = cur + 1;
-                next %= list.Count;
+                if (next >= list.Count)
+                {
+                    next -= list.Count;
+                }
             }
         }
 
@@ -649,7 +661,10 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateTrianglePositionOrder(int length, out int[] triangles)
     {
-
+        if (length <= 0) {
+            triangles = new int[0];
+            return;
+        }
         if (!bPartiallyView)
         {
             triangles = new int[length * 3];
