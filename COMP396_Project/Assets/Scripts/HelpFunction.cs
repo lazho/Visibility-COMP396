@@ -43,6 +43,12 @@ public class HelpFunction : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Determine a point is in obstacle or not
+    /// </summary>
+    /// <param name="detectedPoint"></param>
+    /// <param name="obstaclePoints"></param>
+    /// <returns></returns>
     public static bool isInObstacle(Vector2 detectedPoint, Vector3[] obstaclePoints)
     {
         for (int i = 0; i < obstaclePoints.Length; i++)

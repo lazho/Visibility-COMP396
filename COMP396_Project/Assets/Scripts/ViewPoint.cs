@@ -30,9 +30,6 @@ public class ViewPoint : MonoBehaviour
         }
     }
 
-    
-
-
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
@@ -78,7 +75,6 @@ public class ViewPoint : MonoBehaviour
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
             if (viewpoint)
             {
-                // TODO replace (0,0)
                 viewpoint.transform.position = position;
                 if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
                 {
@@ -134,7 +130,6 @@ public class ViewPoint : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         if (!drawobstacle.bUserDefine)
         {
             if (!debug)
@@ -245,14 +240,14 @@ public class ViewPoint : MonoBehaviour
                 Vector2 intersection2;
                 if (HelpFunction.FindLineCircleIntersections(viewpoint.transform.position, range, endPoints.obstaclePoints[i], endPoints.obstaclePoints[(i + 1) % endPoints.obstaclePoints.Length], out intersection1, out intersection2) != 0)
                 {
-                    GenerateRangeIntersectionPoint(intersection1);
-                    GenerateRangeIntersectionPoint(intersection2);
+                    GenerateRangeIntersectionPoint(intersection1, endPoints.index);
+                    GenerateRangeIntersectionPoint(intersection2, endPoints.index);
                 }
             }
         }
     }
 
-    private void GenerateRangeIntersectionPoint(Vector2 intersection)
+    private void GenerateRangeIntersectionPoint(Vector2 intersection, int obstacleIndex)
     {
         if (Double.IsNaN(intersection.x) || Double.IsNaN(intersection.y))
         {
@@ -262,12 +257,12 @@ public class ViewPoint : MonoBehaviour
         RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
         if (rayCastHits2D.Length == 0)
         {
-            addPointToCriticalList(new HitPoint(intersection, 396));
+            addPointToCriticalList(new HitPoint(intersection, obstacleIndex));
         }
 
         if (rayCastHits2D.Length == 1 && HelpFunction.Vector2Equal(rayCastHits2D[0].point, intersection))
         {
-            addPointToCriticalList(new HitPoint(intersection, 396));
+            addPointToCriticalList(new HitPoint(intersection, obstacleIndex));
         }
     }
 
@@ -287,7 +282,7 @@ public class ViewPoint : MonoBehaviour
                     // force to add the critical point
                     if ((endPoints.obstaclePoints[endPointIndex] - viewpoint.transform.position).magnitude < range)
                     {
-                        addPointToCriticalList(new HitPoint(endPoints.obstaclePoints[endPointIndex], 396));
+                        addPointToCriticalList(new HitPoint(endPoints.obstaclePoints[endPointIndex], endPoints.index));
                     }
                 }
             }
@@ -296,12 +291,19 @@ public class ViewPoint : MonoBehaviour
             {
                 Vector2 temp = new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x
                     , rayCastHit2D.point.y - viewpoint.transform.position.y);
-                if (temp.magnitude < range)
-                {
-                    // if the hit result is the same position as obstacle position
-                    if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints.obstaclePoints[endPointIndex]))
-                    {
 
+                // if the hit result is the same position as obstacle position
+                if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints.obstaclePoints[endPointIndex]))
+                {
+                    // If the hit point is out of the range
+                    if (temp.magnitude > range)
+                    {
+                        hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                        hitPoint.obstacleIndex = endPoints.index;
+                        addPointToCriticalList(hitPoint);
+                    }
+                    else
+                    {
                         // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
                         Vector3 prev = endPoints.obstaclePoints[(endPointIndex + endPoints.obstaclePoints.Length - 1) % endPoints.obstaclePoints.Length];
                         Vector3 next = endPoints.obstaclePoints[(endPointIndex + 1) % endPoints.obstaclePoints.Length];
@@ -309,7 +311,7 @@ public class ViewPoint : MonoBehaviour
                         if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                             , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                         {
-                            addPointToCriticalList(new HitPoint(rayCastHit2D.point, 396));
+                            addPointToCriticalList(new HitPoint(rayCastHit2D.point, endPoints.index));
                             if (!bMesh)
                             {
                                 GenerateVisibilityEffectWithLine(viewpoint, rayCastHit2D.point);
@@ -319,21 +321,28 @@ public class ViewPoint : MonoBehaviour
                         else
                         {
                             hitPoint.location = rayCastHit2D.point;
+                            hitPoint.obstacleIndex = endPoints.index;
                             addPointToCriticalList(hitPoint);
                             break;
                         }
                     }
-                    else
-                    {
-                        hitPoint.location = rayCastHit2D.point;
-                        addPointToCriticalList(hitPoint);
-                        break;
-                    }
                 }
                 else
                 {
-                    // hitpoint out of range
-                    hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                    hitPoint.location = rayCastHit2D.point;
+                    // find the index of obstacle in the hit point
+                    foreach (OBSTACLE.Obstacle obstacle in ObstaclesLine)
+                    {
+                        if (HelpFunction.isInObstacle(hitPoint.location, obstacle.obstaclePoints))
+                        {
+                            hitPoint.obstacleIndex = obstacle.index;
+                            break;
+                        }
+                    }
+                    if (temp.magnitude > range)
+                    {
+                        hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                    }
                     addPointToCriticalList(hitPoint);
                     break;
                 }
@@ -355,11 +364,14 @@ public class ViewPoint : MonoBehaviour
             if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude < range)
             {
                 hitPoint.location = rayCastHits2D[0].point;
+                //TODO
+                hitPoint.obstacleIndex = 396;
                 addPointToCriticalList(hitPoint);
             }
             else
             {
                 hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                hitPoint.obstacleIndex = 396;
                 addPointToCriticalList(hitPoint);
             }
             if (!bMesh)
@@ -465,7 +477,7 @@ public class ViewPoint : MonoBehaviour
         return list;
     }
 
-    private static  void swapOrder<T>(List<T> list, int cur, int end)
+    private static void swapOrder<T>(List<T> list, int cur, int end)
     {
         // swap the order
         for (int i = 0; i <= (end - cur) / 2; i++)

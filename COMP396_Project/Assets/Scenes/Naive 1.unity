@@ -280,17 +280,17 @@ PrefabInstance:
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.x
-      value: -6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: position.y
-      value: -5.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
       propertyPath: debug
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6253305295566924121, guid: d537a56f61fc4ac40ad60c80b48a5ae6,
         type: 3}
@@ -927,6 +927,11 @@ PrefabInstance:
         type: 3}
       propertyPath: obstacles.Array.data[4].obstaclePoints.Array.data[3].y
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4196113160231951353, guid: 3218d82a0c74c914f92da7d2141a620b,
+        type: 3}
+      propertyPath: obstacles.Array.data[0].index
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 354989143, guid: 3218d82a0c74c914f92da7d2141a620b, type: 3}
       propertyPath: m_Points.m_Paths.Array.size

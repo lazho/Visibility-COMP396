@@ -44,9 +44,9 @@ public class OBSTACLE : MonoBehaviour
 
     private void GenerateIndex()
     {
-        for (int i = 1; i < obstacles.Length; i++)
+        for (int i = 0; i < obstacles.Length; i++)
         {
-            obstacles[i].index = i;
+            obstacles[i].index = i + 1;
         }
     }
 
