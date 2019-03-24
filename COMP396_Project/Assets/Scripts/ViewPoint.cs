@@ -17,12 +17,27 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private Vector2 endDirection = new Vector2(1, 0);
     [SerializeField] private int range = 0;
 
+    [System.Serializable]
+    public struct HitPoint
+    {
+        public Vector2 location;
+        public int obstacleIndex;
+
+        public HitPoint(Vector2 location, int i)
+        {
+            this.location = location;
+            this.obstacleIndex = i;
+        }
+    }
+
+    
+
 
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
     [SerializeField] private bool debug = false;
-    [SerializeField] private Vector2[] criticalPointDebug;
+    [SerializeField] private HitPoint[] criticalPointDebug;
 
     private float screenWidthInUnits = 32f;
     private float screenHeightInUnits = 18f;
@@ -35,7 +50,7 @@ public class ViewPoint : MonoBehaviour
     MeshFilter meshfilter;
     Mesh mesh;
 
-    LinkedList<Vector2> criticalPoints = new LinkedList<Vector2>();
+    LinkedList<HitPoint> criticalPoints = new LinkedList<HitPoint>();
     GameObject viewpoint;
     bool rangeEffect = true;
 
@@ -69,17 +84,6 @@ public class ViewPoint : MonoBehaviour
                 {
                     GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
                     GenerateCriticalPoint(viewpoint);
-
-                    // TODO update critical point debug
-                    // criticalPointDebug = new Vector2[criticalPoints.Count];
-
-
-                    /*
-                    for (int i = 0; i < criticalPoints.Count; i++)
-                    {
-                        criticalPointDebug[i] = criticalPoints
-                    }
-                    */
                 }
 
                 if (bMesh)
@@ -187,9 +191,9 @@ public class ViewPoint : MonoBehaviour
         {
             foreach (OBSTACLE.Obstacle obstacleLine in ObstaclesLine)
             {
-                GenerateLinesCast(viewpoint, obstacleLine.obstaclePoints);
+                GenerateLinesCast(viewpoint, obstacleLine);
             }
-            GenerateLinesCast(viewpoint, BoundaryLine);
+            GenerateLinesCast(viewpoint, new OBSTACLE.Obstacle(BoundaryLine, 0));
         }
         else
         {
@@ -208,40 +212,38 @@ public class ViewPoint : MonoBehaviour
      * @param viewpoint   the oject of the view point
      * @param endPoints   the list of the end points that need to connected with the view point     
      */
-    private void GenerateLinesCast(GameObject viewpoint, Vector3[] endPoints)
+    private void GenerateLinesCast(GameObject viewpoint, OBSTACLE.Obstacle endPoints)
     {
-        Vector2 hitPoint = new Vector2();
-
-        for (int i = 0; i < endPoints.Length; i++)
+        for (int i = 0; i < endPoints.obstaclePoints.Length; i++)
         {
-            Vector2 direction = endPoints[i] - viewpoint.transform.position;
+            Vector2 direction = endPoints.obstaclePoints[i] - viewpoint.transform.position;
             if (bPartiallyView)
             {
                 if (HelpFunction.isInsideClockRangeOfTwoVector(startDirection, endDirection, direction))
                 {
-                    hitPoint = GenerateLineCast(viewpoint, endPoints, direction, i);
+                    GenerateLineCast(viewpoint, endPoints, direction, i);
                 }
             }
             else
             {
-                hitPoint = GenerateLineCast(viewpoint, endPoints, direction, i);
+                GenerateLineCast(viewpoint, endPoints, direction, i);
             }
         }
 
         if (bPartiallyView)
         {
-            GenerateLineCast(viewpoint, endPoints, startDirection);
-            GenerateLineCast(viewpoint, endPoints, endDirection);
+            GenerateLineCast(viewpoint, endPoints.obstaclePoints, startDirection);
+            GenerateLineCast(viewpoint, endPoints.obstaclePoints, endDirection);
         }
 
         if (rangeEffect)
         {
             // compute the intersection point with the obstacle
-            for (int i = 0; i < endPoints.Length; i++)
+            for (int i = 0; i < endPoints.obstaclePoints.Length; i++)
             {
                 Vector2 intersection1;
                 Vector2 intersection2;
-                if (HelpFunction.FindLineCircleIntersections(viewpoint.transform.position, range, endPoints[i], endPoints[(i + 1) % endPoints.Length], out intersection1, out intersection2) != 0)
+                if (HelpFunction.FindLineCircleIntersections(viewpoint.transform.position, range, endPoints.obstaclePoints[i], endPoints.obstaclePoints[(i + 1) % endPoints.obstaclePoints.Length], out intersection1, out intersection2) != 0)
                 {
                     GenerateRangeIntersectionPoint(intersection1);
                     GenerateRangeIntersectionPoint(intersection2);
@@ -260,32 +262,32 @@ public class ViewPoint : MonoBehaviour
         RaycastHit2D[] rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction, range);
         if (rayCastHits2D.Length == 0)
         {
-            addPointToCriticalList(intersection);
+            addPointToCriticalList(new HitPoint(intersection, 396));
         }
 
         if (rayCastHits2D.Length == 1 && HelpFunction.Vector2Equal(rayCastHits2D[0].point, intersection))
         {
-            addPointToCriticalList(intersection);
+            addPointToCriticalList(new HitPoint(intersection, 396));
         }
     }
 
-    private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction, int endPointIndex)
+    private void GenerateLineCast(GameObject viewpoint, OBSTACLE.Obstacle endPoints, Vector2 direction, int endPointIndex)
     {
-        Vector2 hitPoint = new Vector2();
+        HitPoint hitPoint = new HitPoint();
         RaycastHit2D[] rayCastHits2D;
         rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
 
         if (rayCastHits2D.Length > 0)
         {
-            if (!HelpFunction.Vector2Equal(endPoints[endPointIndex], rayCastHits2D[0].point))
+            if (!HelpFunction.Vector2Equal(endPoints.obstaclePoints[endPointIndex], rayCastHits2D[0].point))
             {
                 if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude
-                > new Vector2(endPoints[endPointIndex].x - viewpoint.transform.position.x, endPoints[endPointIndex].y - viewpoint.transform.position.y).magnitude)
+                > new Vector2(endPoints.obstaclePoints[endPointIndex].x - viewpoint.transform.position.x, endPoints.obstaclePoints[endPointIndex].y - viewpoint.transform.position.y).magnitude)
                 {
                     // force to add the critical point
-                    if ((endPoints[endPointIndex] - viewpoint.transform.position).magnitude < range)
+                    if ((endPoints.obstaclePoints[endPointIndex] - viewpoint.transform.position).magnitude < range)
                     {
-                        addPointToCriticalList(endPoints[endPointIndex]);
+                        addPointToCriticalList(new HitPoint(endPoints.obstaclePoints[endPointIndex], 396));
                     }
                 }
             }
@@ -297,17 +299,17 @@ public class ViewPoint : MonoBehaviour
                 if (temp.magnitude < range)
                 {
                     // if the hit result is the same position as obstacle position
-                    if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints[endPointIndex]))
+                    if (HelpFunction.Vector2Equal(rayCastHit2D.point, endPoints.obstaclePoints[endPointIndex]))
                     {
 
                         // If the neighbour endpoints of the hitting result are both in the one side, keep the hitting result
-                        Vector3 prev = endPoints[(endPointIndex + endPoints.Length - 1) % endPoints.Length];
-                        Vector3 next = endPoints[(endPointIndex + 1) % endPoints.Length];
+                        Vector3 prev = endPoints.obstaclePoints[(endPointIndex + endPoints.obstaclePoints.Length - 1) % endPoints.obstaclePoints.Length];
+                        Vector3 next = endPoints.obstaclePoints[(endPointIndex + 1) % endPoints.obstaclePoints.Length];
 
                         if (AreSameSide(new Vector2(rayCastHit2D.point.x - viewpoint.transform.position.x, rayCastHit2D.point.y - viewpoint.transform.position.y)
                             , prev - viewpoint.transform.position, next - viewpoint.transform.position))
                         {
-                            addPointToCriticalList(rayCastHit2D.point);
+                            addPointToCriticalList(new HitPoint(rayCastHit2D.point, 396));
                             if (!bMesh)
                             {
                                 GenerateVisibilityEffectWithLine(viewpoint, rayCastHit2D.point);
@@ -316,63 +318,63 @@ public class ViewPoint : MonoBehaviour
                         }
                         else
                         {
-                            addPointToCriticalList(rayCastHit2D.point);
-                            hitPoint = rayCastHit2D.point;
+                            hitPoint.location = rayCastHit2D.point;
+                            addPointToCriticalList(hitPoint);
                             break;
                         }
                     }
                     else
                     {
-                        addPointToCriticalList(rayCastHit2D.point);
-                        hitPoint = rayCastHit2D.point;
+                        hitPoint.location = rayCastHit2D.point;
+                        addPointToCriticalList(hitPoint);
                         break;
                     }
                 }
                 else
                 {
                     // hitpoint out of range
-                    addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
+                    hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                    addPointToCriticalList(hitPoint);
                     break;
                 }
             }
             if (!bMesh)
             {
-                GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
+                GenerateVisibilityEffectWithLine(viewpoint, hitPoint.location);
             }
         }
-        return hitPoint;
     }
 
-    private Vector2 GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction)
+    private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction)
     {
-        Vector2 hitPoint = new Vector2();
+        HitPoint hitPoint = new HitPoint();
         RaycastHit2D[] rayCastHits2D;
         rayCastHits2D = Physics2D.RaycastAll(viewpoint.transform.position, direction);
         if (rayCastHits2D.Length > 0)
         {
-            hitPoint = rayCastHits2D[0].point;
             if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude < range)
             {
+                hitPoint.location = rayCastHits2D[0].point;
                 addPointToCriticalList(hitPoint);
             }
             else
             {
-                addPointToCriticalList(new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range);
+                hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
+                addPointToCriticalList(hitPoint);
             }
             if (!bMesh)
             {
-                GenerateVisibilityEffectWithLine(viewpoint, hitPoint);
+                GenerateVisibilityEffectWithLine(viewpoint, hitPoint.location);
             }
         }
-        return hitPoint;
     }
 
-    private void addPointToCriticalList(Vector3 point)
+    private void addPointToCriticalList(HitPoint point)
     {
         bool isContain = false;
-        foreach (Vector2 v in criticalPoints)
+        foreach (HitPoint v in criticalPoints)
         {
-            if (HelpFunction.Vector2Equal(v, point))
+            if (HelpFunction.Vector2Equal(v.location, point.location))
             {
                 isContain = true;
                 break;
@@ -384,13 +386,19 @@ public class ViewPoint : MonoBehaviour
         }
     }
 
-    private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<Vector2> criticalPoints)
+    private void GenerateVisibilityEffectWithMesh(GameObject viewpoint, LinkedList<HitPoint> criticalPoints)
     {
-        List<Vector2> sortedcriticalPointsList = sortCriticalPointClockWise(criticalPoints.ToList<Vector2>());
-        GenerateMeshTriangle(viewpoint, sortedcriticalPointsList);
+        List<HitPoint> sortedcriticalPointsList = sortCriticalPointClockWise(criticalPoints.ToList<HitPoint>());
+
+        List<Vector2> tempSortedCriticalPointsList = new List<Vector2>();
+        foreach (HitPoint criticalPoint in sortedcriticalPointsList)
+        {
+            tempSortedCriticalPointsList.Add(criticalPoint.location);
+        }
+        GenerateMeshTriangle(viewpoint, tempSortedCriticalPointsList);
     }
 
-    private List<Vector2> sortCriticalPointClockWise(List<Vector2> list)
+    private List<HitPoint> sortCriticalPointClockWise(List<HitPoint> list)
     {
         list.Sort(compareByAngle);
         criticalPointDebug = list.ToArray();
@@ -425,16 +433,16 @@ public class ViewPoint : MonoBehaviour
 
                 if (end > cur && flag)
                 {
-                    Vector2 preNode = list[pre];
-                    Vector2 nextNode = list[next];
+                    Vector2 preNode = list[pre].location;
+                    Vector2 nextNode = list[next].location;
                     bool test;
                     if (cur == 0)
                     {
-                        test = isInSameObstaclesLine(list[end], nextNode);
+                        test = isInSameObstaclesLine(list[end].location, nextNode);
                     }
                     else
                     {
-                        test = isInSameObstaclesLine(list[cur], preNode);
+                        test = isInSameObstaclesLine(list[cur].location, preNode);
                     }
                     if (!test)
                     {
@@ -457,12 +465,12 @@ public class ViewPoint : MonoBehaviour
         return list;
     }
 
-    private static void swapOrder(List<Vector2> list, int cur, int end)
+    private static  void swapOrder<T>(List<T> list, int cur, int end)
     {
         // swap the order
         for (int i = 0; i <= (end - cur) / 2; i++)
         {
-            Vector2 temp = list[cur + i];
+            T temp = list[cur + i];
             list[cur + i] = list[end - i];
             list[end - i] = temp;
         }
@@ -589,8 +597,10 @@ public class ViewPoint : MonoBehaviour
 
     // compare two vector 
     // 0 -> v1 == v2; -1 -> v1 < v2; 1 -> v1 > v2
-    private int compareByAngle(Vector2 v1, Vector2 v2)
+    private int compareByAngle(HitPoint h1, HitPoint h2)
     {
+        Vector2 v1 = h1.location;
+        Vector2 v2 = h2.location;
         v1 = new Vector2(v1.x - viewpoint.transform.position.x, v1.y - viewpoint.transform.position.y);
         v2 = new Vector2(v2.x - viewpoint.transform.position.x, v2.y - viewpoint.transform.position.y);
         float angle1;

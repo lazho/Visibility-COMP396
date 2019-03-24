@@ -11,6 +11,13 @@ public class OBSTACLE : MonoBehaviour
     [System.Serializable] public struct Obstacle
     {
         public Vector3[] obstaclePoints;
+        public int index;
+
+        public Obstacle(Vector3[] points, int i)
+        {
+            obstaclePoints = points;
+            index = i;
+        }
     }
     [SerializeField] private Obstacle[] obstacles;
     [SerializeField] public bool bUserDefine = false;
@@ -29,8 +36,17 @@ public class OBSTACLE : MonoBehaviour
     {
         if (!bUserDefine)
         {
+            GenerateIndex();
             GenerateObstacles(obstacles);
             GenerateCollider(obstacles);
+        }
+    }
+
+    private void GenerateIndex()
+    {
+        for (int i = 1; i < obstacles.Length; i++)
+        {
+            obstacles[i].index = i;
         }
     }
 
