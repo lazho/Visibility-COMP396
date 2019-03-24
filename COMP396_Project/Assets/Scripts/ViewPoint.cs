@@ -415,12 +415,11 @@ public class ViewPoint : MonoBehaviour
         list.Sort(compareByAngle);
         criticalPointDebug = list.ToArray();
         Debug.Log("Range" + range);
+        int round = 1;
+        bool flag = false;
         if (!rangeEffect)
         {
             Debug.Log("Rearrange the point order");
-            int round = 1;
-            bool flag = false;
-
             int cur = 0;
             // the index of previous node
             int pre = list.Count - 1;
@@ -472,7 +471,73 @@ public class ViewPoint : MonoBehaviour
                 next %= list.Count;
             }
         }
+        else
+        {
+            int cur = 0;
+            // the index of previous node
+            int pre = list.Count - 1;
+            // the index of next node
+            int next = 1;
+            while (cur < list.Count + 1 && round < 3)
+            {
+                if (cur == list.Count)
+                {
+                    cur = 0;
+                    round++;
+                }
 
+                int end = cur;
+                while (end + 1 < list.Count && compareByAngle(list[end], list[end + 1]) == 0)
+                {
+                    end++;
+                    next++;
+                    next %= list.Count;
+                }
+                // List with index from "cur" to "end" are all in the same line
+
+                if (end > cur && flag)
+                {
+                    HitPoint preNode = list[pre];
+                    HitPoint nextNode = list[next];
+                    HitPoint curNode = list[cur];
+                    HitPoint endNode = list[end];
+                    // bool test;
+                    if (preNode.obstacleIndex != curNode.obstacleIndex)
+                    {
+                        if (endNode.obstacleIndex == preNode.obstacleIndex)
+                        {
+                            // swap the order
+                            swapOrder(list, cur, end);
+                        }
+                    }
+
+
+
+                    //if (cur == 0)
+                    //{
+                    //    test = list[end].obstacleIndex == nextNode.obstacleIndex;
+                    //}
+                    //else
+                    //{
+                    //    test = list[cur].obstacleIndex == preNode.obstacleIndex;
+                    //}
+                    //test = list[cur].obstacleIndex
+                    //if (!test)
+                    //{
+                    //    // swap the order
+                    //    swapOrder(list, cur, end);
+                    //}
+                }
+                else
+                {
+                    flag = true;
+                }
+                cur = end + 1;
+                pre = end;
+                next = cur + 1;
+                next %= list.Count;
+            }
+        }
 
         return list;
     }
