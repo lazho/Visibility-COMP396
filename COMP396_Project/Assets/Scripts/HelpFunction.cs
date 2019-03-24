@@ -341,6 +341,7 @@ public class HelpFunction : MonoBehaviour
     // clockwise
     public static bool isInsideClockRangeOfTwoVector(Vector2 start, Vector2 end, Vector2 test)
     {
+        if (Vector2Equal(test.normalized, start.normalized) || Vector2Equal(test.normalized, end.normalized)) { return true; }
         float angle1 = Vector2.Angle(start, test);
         if (floatGreat(start.x * test.y - start.y * test.x, 0f))
         {

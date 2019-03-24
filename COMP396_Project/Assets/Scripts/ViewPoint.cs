@@ -16,6 +16,8 @@ public class ViewPoint : MonoBehaviour
     [SerializeField] private Vector2 startDirection = new Vector2(1, 0);
     [SerializeField] private Vector2 endDirection = new Vector2(1, 0);
     [SerializeField] private int range = 0;
+    [SerializeField] private bool moveable = false;
+    [SerializeField] private Vector2 position;
 
     [System.Serializable]
     public struct HitPoint
@@ -33,7 +35,6 @@ public class ViewPoint : MonoBehaviour
     // Test 
     // Whether use mesh to show the visibility effect or not
     [SerializeField] private bool bMesh = false;
-    [SerializeField] private bool debug = false;
     [SerializeField] private HitPoint[] criticalPointDebug;
 
     private float screenWidthInUnits = 32f;
@@ -51,8 +52,7 @@ public class ViewPoint : MonoBehaviour
     GameObject viewpoint;
     bool rangeEffect = true;
 
-    //Debug
-    [SerializeField] private Vector2 position;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -70,7 +70,7 @@ public class ViewPoint : MonoBehaviour
             rangeEffect = false;
             range = int.MaxValue;
         }
-        if (debug)
+        if (!moveable)
         {
             viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
             if (viewpoint)
@@ -116,7 +116,7 @@ public class ViewPoint : MonoBehaviour
                 theta += deltaTheta;
             }
 
-            if (!debug)
+            if (moveable)
             {
                 Destroy(circleRenderer, 0.03f);
             }
@@ -132,7 +132,7 @@ public class ViewPoint : MonoBehaviour
     {
         if (!drawobstacle.bUserDefine)
         {
-            if (!debug)
+            if (moveable)
             {
                 viewpoint = GameObject.FindGameObjectWithTag("ViewPoint");
 
@@ -142,11 +142,8 @@ public class ViewPoint : MonoBehaviour
                     if (HelpFunction.IsPointInsidePolygon(viewpoint.transform.position, BoundaryLine.ToList<Vector3>()))
                     {
                         GameObject viewpointPrefab = Instantiate(ViewPointPrefab, viewpoint.transform.position, Quaternion.identity);
-
                         GenerateCriticalPoint(viewpoint);
-
                         Destroy(viewpointPrefab, 0.02f);
-
                         if (bMesh)
                         {
                             GenerateVisibilityEffectWithMesh(viewpoint, criticalPoints);
@@ -156,13 +153,7 @@ public class ViewPoint : MonoBehaviour
                             }
                         }
                     }
-                    else
-                    {
-                        if (mesh)
-                        {
-                            mesh.Clear();
-                        }
-                    }
+                    else if (mesh) { mesh.Clear(); }
                     position = viewpoint.transform.position;
                 }
             }
@@ -193,6 +184,12 @@ public class ViewPoint : MonoBehaviour
         else
         {
             Debug.Log("No element in BoundaryLine.");
+        }
+
+        if (bPartiallyView)
+        {
+            GenerateLineCast(viewpoint, startDirection);
+            GenerateLineCast(viewpoint, endDirection);
         }
     }
 
@@ -225,11 +222,7 @@ public class ViewPoint : MonoBehaviour
             }
         }
 
-        if (bPartiallyView)
-        {
-            GenerateLineCast(viewpoint, endPoints.obstaclePoints, startDirection);
-            GenerateLineCast(viewpoint, endPoints.obstaclePoints, endDirection);
-        }
+        
 
         if (rangeEffect)
         {
@@ -354,7 +347,7 @@ public class ViewPoint : MonoBehaviour
         }
     }
 
-    private void GenerateLineCast(GameObject viewpoint, Vector3[] endPoints, Vector2 direction)
+    private void GenerateLineCast(GameObject viewpoint, Vector2 direction)
     {
         HitPoint hitPoint = new HitPoint();
         RaycastHit2D[] rayCastHits2D;
@@ -364,14 +357,21 @@ public class ViewPoint : MonoBehaviour
             if ((rayCastHits2D[0].point - new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y)).magnitude < range)
             {
                 hitPoint.location = rayCastHits2D[0].point;
-                //TODO
-                hitPoint.obstacleIndex = 396;
+                // find the index of obstacle in the hit point
+                foreach (OBSTACLE.Obstacle obstacle in ObstaclesLine)
+                {
+                    if (HelpFunction.isInObstacle(hitPoint.location, obstacle.obstaclePoints))
+                    {
+                        hitPoint.obstacleIndex = obstacle.index;
+                        break;
+                    }
+                }
                 addPointToCriticalList(hitPoint);
             }
             else
             {
                 hitPoint.location = new Vector2(viewpoint.transform.position.x, viewpoint.transform.position.y) + direction.normalized * range;
-                hitPoint.obstacleIndex = 396;
+                hitPoint.obstacleIndex = -1;
                 addPointToCriticalList(hitPoint);
             }
             if (!bMesh)
@@ -749,7 +749,7 @@ public class ViewPoint : MonoBehaviour
             Debug.Log("Something bad!!");
         }
 
-        if (!debug)
+        if (moveable)
         {
             foreach (GameObject criticalpointPrefab in crticalpointsPrefab)
             {
