@@ -278,25 +278,60 @@ public class HelpFunction : MonoBehaviour
         return triangles;
     }
 
+    public static int isConcave(OBSTACLE.Obstacle obstacle)
+    {
+        //bool result = isClockWise(obstacle.obstaclePoints[0], obstacle.obstaclePoints[1], obstacle.obstaclePoints[2]);
+        //for (int i = 1; i < obstacle.obstaclePoints.Length; i++)
+        //{
+        //    if (isClockWise(obstacle.obstaclePoints[i],
+        //        obstacle.obstaclePoints[(i + 1) % obstacle.obstaclePoints.Length],
+        //        obstacle.obstaclePoints[(i + 2) % obstacle.obstaclePoints.Length]) != result)
+        //    {
+        //        return i;
+        //    }
+        //}
+        //return -1;
+        return isConcave(obstacle.obstaclePoints);
+    }
 
     /// <summary>
     /// Detect whether the given obstacle polygon is concave or not.
     /// </summary>
     /// <param name="obstacle"> the given obstacle </param>
     /// <returns>-1: if the given obstacle is a not a concave polygon, the index of concave point :otherwise </returns>
-    public static int isConcave(OBSTACLE.Obstacle obstacle)
+    public static int isConcave(Vector2[] obstaclePoints)
     {
-        bool result = isClockWise(obstacle.obstaclePoints[0], obstacle.obstaclePoints[1], obstacle.obstaclePoints[2]);
-        for (int i = 1; i < obstacle.obstaclePoints.Length; i++)
+        bool result = isClockWise(obstaclePoints[0], obstaclePoints[1], obstaclePoints[2]);
+        for (int i = 1; i < obstaclePoints.Length; i++)
         {
-            if (isClockWise(obstacle.obstaclePoints[i],
-                obstacle.obstaclePoints[(i + 1) % obstacle.obstaclePoints.Length],
-                obstacle.obstaclePoints[(i + 2) % obstacle.obstaclePoints.Length]) != result)
+            if (isClockWise(obstaclePoints[i],
+                obstaclePoints[(i + 1) % obstaclePoints.Length],
+                obstaclePoints[(i + 2) % obstaclePoints.Length]) != result)
             {
                 return i;
             }
         }
         return -1;
+    }
+
+    public static int isConcave(Vector3[] obstaclePoints)
+    {
+        Vector2[] temp = new Vector2[obstaclePoints.Length];
+        for (int i = 0; i < obstaclePoints.Length; i++)
+        {
+            temp[i] = obstaclePoints[i];
+        }
+        return isConcave(temp);
+    }
+
+    public static int isConcave(ViewPoint.HitPoint[] obstaclePoints)
+    {
+        Vector2[] temp = new Vector2[obstaclePoints.Length];
+        for (int i = 0; i < obstaclePoints.Length; i++)
+        {
+            temp[i] = obstaclePoints[i].location;
+        }
+        return isConcave(temp);
     }
 
     public static bool isClockWise(Vector2 a, Vector2 b, Vector2 c)
