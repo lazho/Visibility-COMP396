@@ -52,7 +52,7 @@ public class ViewPoint : MonoBehaviour
     GameObject viewpoint;
     bool rangeEffect = true;
 
-    
+
 
     // Start is called before the first frame update
     void Start()
@@ -222,7 +222,7 @@ public class ViewPoint : MonoBehaviour
             }
         }
 
-        
+
 
         if (rangeEffect)
         {
@@ -475,7 +475,7 @@ public class ViewPoint : MonoBehaviour
                 }
             }
         }
-        else
+        else // with range effect
         {
             int cur = 0;
             // the index of previous node
@@ -505,7 +505,6 @@ public class ViewPoint : MonoBehaviour
                     HitPoint nextNode = list[next];
                     HitPoint curNode = list[cur];
                     HitPoint endNode = list[end];
-                    // bool test;
                     if (preNode.obstacleIndex != curNode.obstacleIndex)
                     {
                         if (endNode.obstacleIndex == preNode.obstacleIndex)
@@ -517,6 +516,30 @@ public class ViewPoint : MonoBehaviour
                         {
                             // swap the order
                             swapOrder(list, cur, end);
+                        }
+                    }
+                    else if (HelpFunction.isConcave(list.ToArray()) != -1)
+                    {
+                        Debug.Log("Further swap");
+                        if (!HelpFunction.isInRangeBound(preNode.location, viewpoint.transform.position, range)
+                            || !HelpFunction.isInRangeBound(curNode.location, viewpoint.transform.position, range))
+                        {
+                            bool test1 = isInSameObstaclesLine(preNode.location, curNode.location);
+                            if (!isInSameObstaclesLine(preNode.location, curNode.location))
+                            {
+                                // swap the order
+                                swapOrder(list, cur, end);
+                            }
+                        }
+                        else if (!HelpFunction.isInRangeBound(endNode.location, viewpoint.transform.position, range)
+                             || !HelpFunction.isInRangeBound(nextNode.location, viewpoint.transform.position, range))
+                        {
+                             bool test2 = isInSameObstaclesLine(endNode.location, nextNode.location);
+                             if (!isInSameObstaclesLine(endNode.location, nextNode.location))
+                             {
+                                 // swap the order
+                                 swapOrder(list, cur, end);
+                             }
                         }
                     }
 
@@ -661,7 +684,8 @@ public class ViewPoint : MonoBehaviour
 
     private void GenerateTrianglePositionOrder(int length, out int[] triangles)
     {
-        if (length <= 0) {
+        if (length <= 0)
+        {
             triangles = new int[0];
             return;
         }

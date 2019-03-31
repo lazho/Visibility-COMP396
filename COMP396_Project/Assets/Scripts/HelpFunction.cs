@@ -498,6 +498,11 @@ public class HelpFunction : MonoBehaviour
         }
     }
 
+    public static bool isInRangeBound(Vector2 testPoint, Vector2 center, int range)
+    {
+        return floatEqual((testPoint - center).magnitude, range);
+    }
+
     private void Start()
     {
         //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, 8)));
