@@ -83,7 +83,7 @@ public class HelpFunction : MonoBehaviour
     /// <returns></returns>
     private static bool IsDetectIntersect(Ray2D ray, Vector2 p1, Vector2 p2)
     {
-        float pointY;//交点Y坐标，x固定值
+        float pointY;
         if (floatEqual(p1.x, p2.x))
         {
             return false;
@@ -94,7 +94,7 @@ public class HelpFunction : MonoBehaviour
         }
         else
         {
-            //直线两点式方程：(y-y2)/(y1-y2) = (x-x2)/(x1-x2)
+            //(y-y2)/(y1-y2) = (x-x2)/(x1-x2)
             float a = p1.x - p2.x;
             float b = p1.y - p2.y;
             float c = p2.y / b - p2.x / a;
@@ -104,14 +104,13 @@ public class HelpFunction : MonoBehaviour
 
         if (floatLess(pointY, ray.origin.y))
         {
-            //交点y小于射线起点y
             return false;
         }
         else
         {
-            Vector3 leftP = floatLess(p1.x, p2.x) ? p1 : p2;//左端点
-            Vector3 rightP = floatLess(p1.x, p2.x) ? p2 : p1;//右端点
-            //交点x位于线段两个端点x之外，相交与线段某个端点时，仅将射线L与左侧多边形一边的端点记为焦点(即就是：只将右端点记为交点)
+            Vector3 leftP = floatLess(p1.x, p2.x) ? p1 : p2;//left endpoint
+            Vector3 rightP = floatLess(p1.x, p2.x) ? p2 : p1;//right endpoint
+            
             if (!floatGreat(ray.origin.x, leftP.x) || floatGreat(ray.origin.x, rightP.x))
             {
                 return false;
@@ -140,7 +139,6 @@ public class HelpFunction : MonoBehaviour
             }
         }
 
-        //不是闭环
         if (!Vector2Equal(polygonVertices[0], polygonVertices[len - 1]))
         {
             if (IsDetectIntersect(ray, polygonVertices[len - 1], polygonVertices[0]))
@@ -179,18 +177,15 @@ public class HelpFunction : MonoBehaviour
     }
 
     /// <summary>
-    /// 三角剖分
-    /// 1.寻找一个可划分顶点
-    /// 2.分割出新的多边形和三角形
-    /// 3.新多边形若为凸多边形，结束；否则继续剖分
+    /// Triangularization
+    /// 1.Find a splitable point
+    /// 2.split to get new polygon 
+    /// 3.repeat until all the polygon are convex
     /// 
-    /// 寻找可划分顶点
-    /// 1.顶点是否为凸顶点：顶点在剩余顶点组成的图形外
-    /// 2.新的多边形没有顶点在分割的三角形内
+    /// Find a splitable point
+    /// 1.Is the vertex a splitable point：whether the vertex is outside the polygon that surrounded by the rest of the vertex
+    /// 2.random connect to a non-adjacent vertex
     /// </summary>
-    /// <param name="verts">顺时针排列的顶点列表</param>
-    /// <param name="indexes">顶点索引列表</param>
-    /// <returns>三角形列表</returns>
     public static List<OBSTACLE.Obstacle> triangularization(OBSTACLE.Obstacle obstacle)
     {
         int len = obstacle.obstaclePoints.Length;
@@ -211,8 +206,8 @@ public class HelpFunction : MonoBehaviour
             return newObstacleList;
         }
 
-        //查找可划分顶点
-        int canFragementIndex = -1;//可划分顶点索引
+        //Find splitable point
+        int canFragementIndex = -1;//the index of splitable point
         for (int i = 0; i < len; i++)
         {
             List<Vector3> polygon = new List<Vector3>(obstacle.obstaclePoints);
@@ -229,14 +224,14 @@ public class HelpFunction : MonoBehaviour
             throw new Exception("Invalid Argument");
         }
 
-        //用可划分顶点将凹多边形划分为一个三角形和一个多边形
+        //split to a triangle and a polygon
         List<Vector3> tTriangles = new List<Vector3>(3);
         int next = (canFragementIndex == len - 1) ? 0 : canFragementIndex + 1;
         int prev = (canFragementIndex == 0) ? len - 1 : canFragementIndex - 1;
         tTriangles.Add(obstacle.obstaclePoints[prev]);
         tTriangles.Add(obstacle.obstaclePoints[canFragementIndex]);
         tTriangles.Add(obstacle.obstaclePoints[next]);
-        //剔除可划分顶点及索引
+        //delete the point 
 
         List<Vector3> tempObstclePoints = obstacle.obstaclePoints.ToList();
         tempObstclePoints.RemoveAt(canFragementIndex);
@@ -251,7 +246,6 @@ public class HelpFunction : MonoBehaviour
     }
 
     /// <summary>
-    /// 凸多边形，顺时针序列，以第1个点来剖分三角形，如下：
     /// 0---1
     /// |   |
     /// 3---2  -->  (0, 1, 2)、(0, 2, 3)
@@ -262,7 +256,7 @@ public class HelpFunction : MonoBehaviour
     public static List<int> ConvexTriangleIndex(List<Vector3> verts, List<int> indexes)
     {
         int len = verts.Count;
-        //若是闭环去除最后一点
+        //delete the last point if it is a closed loop
         if (len > 1 && Vector2Equal(verts[0], verts[len - 1]))
         {
             len--;
@@ -280,17 +274,6 @@ public class HelpFunction : MonoBehaviour
 
     public static int isConcave(OBSTACLE.Obstacle obstacle)
     {
-        //bool result = isClockWise(obstacle.obstaclePoints[0], obstacle.obstaclePoints[1], obstacle.obstaclePoints[2]);
-        //for (int i = 1; i < obstacle.obstaclePoints.Length; i++)
-        //{
-        //    if (isClockWise(obstacle.obstaclePoints[i],
-        //        obstacle.obstaclePoints[(i + 1) % obstacle.obstaclePoints.Length],
-        //        obstacle.obstaclePoints[(i + 2) % obstacle.obstaclePoints.Length]) != result)
-        //    {
-        //        return i;
-        //    }
-        //}
-        //return -1;
         return isConcave(obstacle.obstaclePoints);
     }
 
@@ -396,34 +379,6 @@ public class HelpFunction : MonoBehaviour
         }
 
         return floatEqual(angle1 + angle2, angle3);
-            
-        /*
-        if (start.y < 0)
-        {
-            return compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
-        }
-        else
-        {
-            if (end.y > 0)
-            {
-                if (compareByAngle(start, end) < 0)
-                {
-                    bool test1 = compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
-                    return compareByAngle(start, test) < 0 && compareByAngle(test, end) < 0;
-                }
-                else
-                {
-                    bool test1 = !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
-                    return !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0); 
-                }
-            }
-            else
-            {
-                bool test1 = !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
-                return !(compareByAngle(end, test) < 0 && compareByAngle(test, start) < 0);
-            }
-        }
-        */
     }
 
     public static float clockwiseAngle(Vector2 from, Vector2 to)
@@ -505,16 +460,7 @@ public class HelpFunction : MonoBehaviour
 
     private void Start()
     {
-        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, 8)));
-        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(-15, 8)));
-        //Debug.Log(isInsideClockRangeOfTwoVector(new Vector2(1, 0), new Vector2(-1, 1), new Vector2(15, -8)));
 
-        /*
-        Debug.Log(clockwiseAngle(new Vector2(1, 1), new Vector2(-1, 1)) + "expected: 270");
-        Debug.Log(clockwiseAngle(new Vector2(1, 0), new Vector2(1, -1)) + "expected: 45" );
-        Debug.Log(clockwiseAngle(new Vector2(1, 0), new Vector2(1, 1)) + "expected: 315 ");
-        Debug.Log(clockwiseAngle(new Vector2(1, 0.3f), new Vector2(1, 0.3f)) + "expected: 0");
-        */
         Vector2 result1;
         Vector2 result2;
         Debug.Log(FindLineCircleIntersections(new Vector2(0, 0), 5f, new Vector2(5, 3), new Vector2(6, 3), out result1, out result2));
